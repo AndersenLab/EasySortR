@@ -48,7 +48,6 @@ Hash: 193916618dce89b287517f457de8fa8b
 Package: XML
 Source: CRAN
 Version: 3.98-1.1
-Hash: c331c4a5e75c8ba3a4dc9545b66754d2
 
 Package: assertthat
 Source: CRAN

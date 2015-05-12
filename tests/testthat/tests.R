@@ -13,6 +13,11 @@ test_that("Reading plates is not functioning", {
     expect_equal(nrow(testPlate), 1863)
     #Check that the classes of each column are correct
     expect_identical(as.vector(sapply(testPlate, class)), c("factor", "factor", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "factor", "character"))
+    # Test to ensure that normalization to TOF was done correctly (checking multiple rows and all normalizaed traits)
+    expect_equal(testPlate[1, 10], testPlate[1, 5]/testPlate[1, 4])
+    expect_equal(testPlate[2, 11], testPlate[2, 7]/testPlate[2, 4])
+    expect_equal(testPlate[3, 12], testPlate[3, 8]/testPlate[3, 4])
+    expect_equal(testPlate[4, 13], testPlate[4, 9]/testPlate[4, 4])
 })
 
 context("Plate summarization")
