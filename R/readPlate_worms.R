@@ -25,5 +25,6 @@ readPlate_worms <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000
                              ifelse(modplate$TOF>=90 & modplate$TOF<200, "L2/L3",
                                     ifelse(modplate$TOF>=200 & modplate$TOF<300, "L4",
                                            ifelse(modplate$TOF>=300, "adult", NA))))
+    modplate[,as.vector(which(lapply(modplate, class) == "integer"))] <- lapply(modplate[,as.vector(which(lapply(modplate, class) == "integer"))], as.numeric)
     return(modplate)
 }
