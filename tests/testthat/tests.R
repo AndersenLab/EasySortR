@@ -2,6 +2,8 @@ library(testthat)
 library(COPASutils)
 library(dplyr)
 library(kernlab)
+
+#Test that plate reading and summarization fuctions are 
 context("Plate reading")
 
 test_that("Reading plates is not functioning", {
@@ -25,8 +27,13 @@ context("Plate summarization")
 test_that("Summarizing plates is not functioning", {
     testPlate <- readPlate_worms("../testPlate.txt")
     summarizedPlate <- summarizePlate_worms(testPlate)
+    
+    #Summarized plates should have 96 rows, one for each well
     expect_equal(nrow(summarizedPlate), 96)
-    testPlate_worms <- testPlate %>% filter(call50 == "object", row == "A", col == 3) %>% select(TOF)
-    expect_equal(summarizedPlate[3, "mean.TOF"], mean(testPlate_worms$TOF))
+    
+    # The mean of all of the values in the A3 well should equal that of the value for A3 in the summarized plate data frame
+    testPlate_worms_A3 <- testPlate %>% filter(call50 == "object", row == "A", col == 3) %>% select(TOF)
+    expect_equal(as.numeric(summarizedPlate[3, "mean.TOF"]), mean(testPlate_worms_A3$TOF))
+    
 })
 
