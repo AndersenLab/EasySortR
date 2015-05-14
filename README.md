@@ -18,7 +18,7 @@ This information is all included in the final datasets along with the COPAS-prov
 
 ### Setup Plates
 
-Do all scored plates have corresponding setup plates? If not, how should we handle getting the number scored into read-in data frames?
+Do all scored plates have corresponding setup plates in all experiments? If not, how should we handle getting the number scored into read-in data frames?
 
 ### Data Structure
 
