@@ -8,7 +8,7 @@
 #' @param ends Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.
 #' @export
 
-summarizePlate_worms <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE) {
+summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE) {
     plate <- plate[plate$call50=="object" | plate$TOF == -1 | is.na(plate$call50),]
     plate <- fillWells(plate)
     processed <- plate %>% group_by(row, col) %>% summarise(n=ifelse(length(TOF[!is.na(TOF)])==0, NA, length(TOF[!is.na(TOF)])),
