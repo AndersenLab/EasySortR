@@ -14,7 +14,7 @@ readDirectory <- function(directory, tofmin, tofmax, extmin, extmax, SVM) {
     dirFiles <- dir(directory)
     files <- subset(dirFiles, grepl(".txt$", dirFiles))
     filePaths <- file.path(directory, files)
-    plates <- lapply(filePaths, function(x){readIndividualPlate(x, tofmin, tofmax, extmin, extmax, SVM)})
+    plates <- lapply(filePaths, function(x){readFile(x, tofmin, tofmax, extmin, extmax, SVM)})
     data <- do.call(rbind, plates)
     return(data)
 }

@@ -9,8 +9,8 @@
 #' @export
 
 summarizeSorted <- function(plates, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE){
-    score <- summarizePlate_worms(plates[[1]], strains, quantiles, log, ends) %>% arrange(plate, row, col)
-    setup <- plates[[2]] %>% group_by(date, experiment, round, assay, plate, drug, row, col) %>% summarize(control.n.sorted = sum(sort==6))
-    data <- left_join(score, setup) %>% mutate(norm.n = n/control.n.sorted) %>% select(-n.sorted, -control.n.sorted)
+    score <- summarizePlates(plates[[1]], strains, quantiles, log, ends) %>% dplyr::arrange(plate, row, col)
+    setup <- plates[[2]] %>% dplyr::group_by(date, experiment, round, assay, plate, drug, row, col) %>% dplyr::summarize(control.n.sorted = sum(sort==6))
+    data <- dplyr::left_join(score, setup) %>% dplyr::mutate(norm.n = n/control.n.sorted) %>% dplyr::select(-n.sorted, -control.n.sorted)
     return(data)
 }

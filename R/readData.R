@@ -1,4 +1,4 @@
-#' readPlate_worms
+#' readData
 #'
 #' Reads sorter data files into R. Built for use exlusively with worms. Depends on COPASutils for the readSorter function.
 #' @param fileDir The file or directory to be read. This can be an individual file, a directory containing .txt files to be read, or the directory containing the score and setup directories.

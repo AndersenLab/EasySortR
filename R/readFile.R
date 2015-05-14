@@ -1,7 +1,7 @@
-#' readPlate_worms
+#' readfile
 #'
 #' Reads sorter data files into R. Built for use exlusively with worms. Depends on COPASutils for the readSorter function.
-#' @param file The file or directory to be read.
+#' @param file The file to be read.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 60.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 2000.
 #' @param extmin The minimum extinction value allowed. Defaults to 0.
@@ -11,7 +11,7 @@
 #' @export
 
 readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE, levels=2){
-    plate <- readSorter(file, tofmin, tofmax, extmin, extmax)
+    plate <- COPASutils::readSorter(file, tofmin, tofmax, extmin, extmax)
     modplate <- with(plate,
                      data.frame(row=Row,
                                 col=as.factor(Column),
@@ -23,13 +23,13 @@ readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=T
                                 yellow=Yellow,
                                 red=Red))
     modplate <- modplate %>%
-        group_by(row, col) %>%
-        do(extractTime(.))
+        dplyr::group_by(row, col) %>%
+        dplyr::do(COPASutils::extractTime(.))
     modplate <- data.frame(modplate)
     modplate[,10:13] <- apply(modplate[,c(5, 7:9)], 2, function(x){x/modplate$TOF})
     colnames(modplate)[10:13] <- c("norm.EXT", "norm.green", "norm.yellow", "norm.red")
     if(SVM){
-        plateprediction <- predict(bubbleSVMmodel_noProfiler, modplate[,3:length(modplate)], type="probabilities")
+        plateprediction <- kernlab::predict(COPASutils::bubbleSVMmodel_noProfiler, modplate[,3:length(modplate)], type="probabilities")
         modplate$object <- plateprediction[,"1"]
         modplate$call50 <- factor(as.numeric(modplate$object>0.5), levels=c(1,0), labels=c("object", "bubble"))
     }

@@ -19,7 +19,7 @@ info <- function(filePath, levels = 1){
     assay <- strsplit(details,"[0-9]+")[[1]][2]
     
     split <- strsplit(splitfp[[1]][(length(splitfp[[1]]))],"_")[[1]]
-    drug <- strsplit(split[2],"\\.")[[1]][1]
+    condition <- strsplit(split[2],"\\.")[[1]][1]
     plate <- as.numeric(strsplit(split[1],"p")[[1]][2])
     
     frame <- data.frame(date,experiment,round,assay,plate,condition)
