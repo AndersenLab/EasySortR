@@ -4,11 +4,10 @@ Version: 0.0.0.9000
 Authors@R: person("Tyler", "Shimko", email = "TShimko126@gmail.com", role = c("aut", "cre"))
 Description: Functions to load, process, and manage data from the Andersen Lab's (Northwestern University, Evanston, IL) COPAS BIOSORT worm sorter.
 Depends: R (>= 3.2.0)
-Imports: 
-	COPASutils,
+Imports: COPASutils,
 	dplyr,
 	ggplot2,
 	kernlab
+Suggests: testthat
 License: MIT
 LazyData: true
-Suggests: testthat
