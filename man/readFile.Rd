@@ -2,10 +2,10 @@
 % Please edit documentation in R/readFile.R
 \name{readFile}
 \alias{readFile}
-\title{readfile}
+\title{Reads single plate data}
 \usage{
 readFile(file, tofmin = 60, tofmax = 2000, extmin = 0, extmax = 10000,
-  SVM = TRUE, levels = 2)
+  SVM = TRUE, levels = 2, oldNames = FALSE)
 }
 \arguments{
 \item{file}{The file to be read.}
@@ -24,6 +24,6 @@ readFile(file, tofmin = 60, tofmax = 2000, extmin = 0, extmax = 10000,
 Returns a single data frame for a single plate file.
 }
 \description{
-Reads sorter data files into R. Built for use exlusively with worms. Depends on COPASutils for the readSorter function.
+Reads individual sorter data files into R. Built exlusively for use with worms.
 }
 

@@ -1,6 +1,7 @@
-#' readfile
+#' Reads single plate data
 #'
-#' Reads sorter data files into R. Built for use exlusively with worms. Depends on COPASutils for the readSorter function.
+#' Reads individual sorter data files into R. Built exlusively for use with worms.
+#' 
 #' @param file The file to be read.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 60.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 2000.
@@ -10,7 +11,7 @@
 #' @return Returns a single data frame for a single plate file.
 #' @export
 
-readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE, levels=2){
+readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE, levels=2, oldNames=FALSE){
     plate <- COPASutils::readSorter(file, tofmin, tofmax, extmin, extmax)
     modplate <- with(plate,
                      data.frame(row=Row,
@@ -38,6 +39,26 @@ readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=T
                                     ifelse(modplate$TOF>=200 & modplate$TOF<300, "L4",
                                            ifelse(modplate$TOF>=300, "adult", NA))))
     modplate[,as.vector(which(lapply(modplate, class) == "integer"))] <- lapply(modplate[,as.vector(which(lapply(modplate, class) == "integer"))], as.numeric)
-    modplate <- cbind(info(file, levels), modplate)
+    
+    if(oldNames){
+        modplate <- cbind(info(file, levels), modplate)
+    } else {
+        plateInfo <- newInfo(file, levels)
+        
+        #### Put in new file path to templates once known
+        strainsFile <- paste0("~/Templates/", plateInfo$strainTemplate[1], ".csv")
+        conditionsFile <- paste0("~/Templates/", plateInfo$conditionTemplate[1], ".csv")
+        controlsFile <- paste0("~/Templates/", plateInfo$controlTemplate[1], ".csv")
+        
+        strains <- readTemplate(strainsFile, type="strains")
+        conditions  <- readTemplate(conditionsFile, type="conditions")
+        controls  <- readTemplate(controlsFile, type="controls")
+        
+        modplate <- cbind(plateInfo[,1:5], modplate)
+        modplate <- left_join(modplate, strains, by=c("row", "col"))
+        modplate <- left_join(modplate, conditions, by=c("row", "col"))
+        modplate <- left_join(modplate, controls, by=c("row", "col"))
+    }
+    
     return(modplate)
 }
