@@ -2,7 +2,7 @@
 % Please edit documentation in R/readData.R
 \name{readData}
 \alias{readData}
-\title{readData}
+\title{Read plate data}
 \usage{
 readData(fileDir, tofmin = 60, tofmax = 2000, extmin = 0,
   extmax = 10000, SVM = TRUE)
@@ -24,6 +24,6 @@ readData(fileDir, tofmin = 60, tofmax = 2000, extmin = 0,
 If a single file is given, a single data frame for only the provided plate is returned. If an experiment directory is given, a list of two data frames will be returned. The first element in the list will be a single data frame for all of the score plates. The second element will be all of the setup plates. If there are no setup plates, NA will fill the second list element. If a setup or score directory is given, a single data frame of all of the plates in the directory will be returned.
 }
 \description{
-Reads sorter data files into R. Built for use exlusively with worms. Depends on COPASutils for the readSorter function.
+This is the primary fuction for reading data into R with this package. It is built exlusively for use with worm data. This function can read in individual plates, plates from a single directory (e.g. setup or score directory), or plates from an experimental directory (with both score and setup sub-directories). The files/directories to be read in (individual file/directory/experiment directory) are detected and handled automatically by the function. This function also utilizes an SVM to determine whether objects are more likely to be bubbles or worms and labels them accordingly. It also estimates the lifestage of each worm.
 }
 
