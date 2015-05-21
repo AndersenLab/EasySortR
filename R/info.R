@@ -1,4 +1,4 @@
-#' info
+#' Read metadata for plates based on directory structure
 #'
 #'
 #' @param filePath The path of the file

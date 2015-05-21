@@ -2,7 +2,7 @@
 % Please edit documentation in R/info.R
 \name{info}
 \alias{info}
-\title{info}
+\title{Read metadata for plates based on directory structure}
 \usage{
 info(filePath, levels = 1)
 }
@@ -15,6 +15,6 @@ info(filePath, levels = 1)
 A one row data frame with a column for the date, experiment, round, assay, plate, and drug.
 }
 \description{
-info
+Read metadata for plates based on directory structure
 }
 
