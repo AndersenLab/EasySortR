@@ -1,51 +1,24 @@
-# regress <- function(data, controls){
-#     moltenData <- melt(data, value.name="phenotype")
-#     moltenControls <- melt(controls, value.name="controlPhenotype")
-#     fusedMoltenData <- left_join(moltenData, moltenControls) %>% rename(trait = variable)
-#     modelData <- fusedMoltenData %>% group_by(trait) %>% filter(!is.na(phenotype), !is.na(controlPhenotype)) %>% do(augment(lm(.$phenotype ~ .$controlPhenotype, na.action=na.omit)))
-#     resids <- modelData %>% select(trait, ..phenotype, ..controlPhenotype, .resid) %>% rename(phenotype = ..phenotype, controlPhenotype = ..controlPhenotype, resid = .resid)
-#     regressedFrame <- left_join(fusedMoltenData, resids) %>% group_by(row, col, trait) %>% distinct() %>% %>% melt()
-#     test <- regressedFrame %>% select(-controlValue) %>% dcast(row+col~variable + resid)
-#     
-#     
-#     
-#     mdata <- data %>% gather(n, n.sorted, mean.TOF)
-#     
-#     
-#     
-#     
-#     
-#     
-#     
-#     
-#     
-#     
-#     regressedValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
-#                                                         function(x){
-#                                                             tryCatch({residuals(lm(data[,x] ~ data$assay + controlValues[,which(colnames(controlValues)==colnames(data)[x])], na.action=na.exclude))},
-#                                                                      error = function(err){return(NA)})
-#                                                         })))
-#     
-#     regressedAssayValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
-#                                                              function(x){
-#                                                                  tryCatch({residuals(lm(data[,x] ~ data$assay, na.action=na.exclude))},
-#                                                                           error = function(err){return(NA)})
-#                                                              })))
-#     
-#     
-#     
-#     #     reactValues <- data.frame(do.call(cbind, lapply(which(colnames(data)=="n"):ncol(data),
-#     #                                                     function(x){
-#     #                                                         reactNorms <- data[,x] - controlValues[,which(colnames(controlValues)==colnames(data)[x])]
-#     #                                                         if(length(reactNorms)==0){
-#     #                                                             reactNorms <- NA
-#     #                                                         }
-#     #                                                         return(reactNorms)
-#     #                                                     })))
-#     
-#     finalDF <- data.frame(data, regressedValues)
-#     colnames(finalDF)[(which(colnames(finalDF)=="norm.n")+1):ncol(finalDF)] <- paste0("resid.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
-#     finalDF <- data.frame(finalDF, regressedAssayValues)
-#     colnames(finalDF)[(which(colnames(finalDF)=="resid.norm.n")+1):ncol(finalDF)] <- paste0("resid.a.", colnames(finalDF)[which(colnames(finalDF)=="n"):which(colnames(finalDF)=="norm.n")])
-#     return(finalDF)
-# }
+#' Regress control values and, optionally, assay values from experimental values
+#'
+#'
+#' @param dataFrame A data frame in long form that contains all of the experimental and control values.
+#' @param assay Boolean stating whether to regress out assay as well as controls.
+#' @return A data frame in long form 
+#' @export
+
+regress <- function(dataFrame, assay=FALSE){
+    data <- dataFrame %>% dplyr::filter(!is.na(control))
+    controls <- dataFrame %>% dplyr::filter(is.na(control))
+    controls$control <- controls$condition
+    moltenData <- melt(data, value.name="phenotype", id.vars=c("date", "experiment", "round", "assay", "plate", "condition", "control", "strain", "row", "col"))
+    moltenControls <- melt(controls, value.name="controlPhenotype", id.vars=c("date", "experiment", "round", "assay", "plate", "condition", "control", "strain", "row", "col")) %>% select(strain, control, variable, controlPhenotype) %>% group_by(strain, control, variable) %>% summarize(controlPhenotype = mean(controlPhenotype, na.rm=TRUE))
+    fusedMoltenData <- left_join(moltenData, moltenControls, by=c("strain", "control", "variable")) %>% rename(trait = variable)
+    if(assay){
+        modelData <- fusedMoltenData %>% group_by(condition, trait) %>% filter(!is.na(phenotype), !is.na(controlPhenotype)) %>% do(augment(lm(phenotype~controlPhenotype+assay, data=.)))
+    } else {
+        modelData <- fusedMoltenData %>% group_by(condition, trait) %>% filter(!is.na(phenotype), !is.na(controlPhenotype)) %>% do(augment(lm(phenotype~controlPhenotype, data=.)))
+    }
+    resids <- modelData %>% select(condition, trait, phenotype, controlPhenotype, .resid) %>% rename(resid = .resid)
+    regressedFrame <- left_join(fusedMoltenData, resids) %>% group_by(row, col, trait) %>% distinct()
+    return(regressedFrame)
+}
