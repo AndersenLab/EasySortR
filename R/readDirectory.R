@@ -1,5 +1,6 @@
-#' readDirectory
+#' Read all of the plate files from a specific directory
 #'
+#' This function reads in all of the plates within a single directory.
 #'
 #' @param directory The directory to be read
 #' @param tofmin The minimum time of flight value allowed. Defaults to 60.
@@ -10,7 +11,7 @@
 #' @return A single data frame with all of the plates from the read directory.
 #' @export
 
-readDirectory <- function(directory, tofmin, tofmax, extmin, extmax, SVM) {
+readDirectory <- function(directory, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE) {
     dirFiles <- dir(directory)
     files <- subset(dirFiles, grepl(".txt$", dirFiles))
     filePaths <- file.path(directory, files)

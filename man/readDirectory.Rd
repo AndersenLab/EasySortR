@@ -2,9 +2,10 @@
 % Please edit documentation in R/readDirectory.R
 \name{readDirectory}
 \alias{readDirectory}
-\title{readDirectory}
+\title{Read all of the plate files from a specific directory}
 \usage{
-readDirectory(directory, tofmin, tofmax, extmin, extmax, SVM)
+readDirectory(directory, tofmin = 60, tofmax = 2000, extmin = 0,
+  extmax = 10000, SVM = TRUE)
 }
 \arguments{
 \item{directory}{The directory to be read}
@@ -23,6 +24,6 @@ readDirectory(directory, tofmin, tofmax, extmin, extmax, SVM)
 A single data frame with all of the plates from the read directory.
 }
 \description{
-readDirectory
+This function reads in all of the plates within a single directory.
 }
 
