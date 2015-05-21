@@ -19,6 +19,6 @@ summarizePlates(plate, strains = NULL, quantiles = FALSE, log = FALSE,
 \item{ends}{Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.}
 }
 \description{
-summarizePlates
+This function summarizes plates when the associated setup plates are not included in the analysis. The function takes the \code{plate} argument and returns a summarized version of the plate, with one well per line. The original plate data must be in wide format.
 }
 

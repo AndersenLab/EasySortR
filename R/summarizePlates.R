@@ -1,5 +1,6 @@
 #' summarizePlates
 #'
+#' This function summarizes plates when the associated setup plates are not included in the analysis. The function takes the \code{plate} argument and returns a summarized version of the plate, with one well per line. The original plate data must be in wide format.
 #'
 #' @param plate The raw plate data frame to be summarized.
 #' @param strains A character vector of length equal to the number of wells in in the plate being summarized.
@@ -11,8 +12,8 @@
 
 summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE) {
     plate <- plate[plate$call50=="object" | plate$TOF == -1 | is.na(plate$call50),]
-    plate <- fillWells(plate)
-    processed <- plate %>% group_by(row, col) %>% summarise(n=ifelse(length(TOF[!is.na(TOF)])==0, NA, length(TOF[!is.na(TOF)])),
+    plate <- COPASutils::fillWells(plate)
+    processed <- plate %>% group_by(date, experiment, round, assay, plate, condition, control, strain, row, col) %>% summarise(n=ifelse(length(TOF[!is.na(TOF)])==0, NA, length(TOF[!is.na(TOF)])),
                                                             n.sorted=sum(sort==6),
                                                             
                                                             mean.TOF=mean(TOF, na.rm=TRUE),
