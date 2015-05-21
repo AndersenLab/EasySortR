@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarizeSorted.R
 \name{summarizeSorted}
 \alias{summarizeSorted}
-\title{summarizeSorted}
+\title{Summarize a plate and a add a column for the normalized population}
 \usage{
 summarizeSorted(plates, strains = NULL, quantiles = FALSE, log = FALSE,
   ends = FALSE)
@@ -19,6 +19,6 @@ summarizeSorted(plates, strains = NULL, quantiles = FALSE, log = FALSE,
 \item{ends}{Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.}
 }
 \description{
-summarizeSorted
+This function takes a list of plates as input and returns a single data frame with data summarized for each well/condition pair. As input, this function takes a two element list, with the first element being a data frame consisting of all of the score plates to be summarized. The second element in the list should be a data frame consisting of all of the setup plates to be summarized, from which the number sorted to each well will be extracted.
 }
 
