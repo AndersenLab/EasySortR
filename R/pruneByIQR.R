@@ -9,7 +9,7 @@
 
 bamfPrune <- function(plate) {
     test <- plate %>%
-    group_by(condition, variable, row, col)%>%
+    group_by(condition, variable)%>%
     dplyr::summarise(iqr = IQR(value, na.rm = TRUE),
                      q1 = quantile(value,probs=.25, na.rm = TRUE),
                      q3 = quantile(value,probs=.75, na.rm = TRUE))%>%
@@ -25,7 +25,7 @@ bamfPrune <- function(plate) {
            cut5h = q3+(iqr*7),
            cut6l = q1-(iqr*10),
            cut6h = q3+(iqr*10))%>%
-    left_join(plate, ., by=c("condition", "row", "col"))%>%
+    left_join(plate, ., by=c("condition", "variable"))%>%
     mutate(onehs = ifelse( cut2h > value & value >= cut1h,1,0),
            onels = ifelse( cut2l < value & value <= cut1l,1,0),
            twohs = ifelse( cut3h > value & value >= cut2h,1,0),
@@ -38,7 +38,7 @@ bamfPrune <- function(plate) {
            fivels = ifelse(cut6l < value & value <= cut5l,1,0),
            sixhs = ifelse(value >= cut6h,1,0),
            sixls = ifelse(value <= cut6l,1,0))%>%
-    group_by(date, experiment, round, assay, plate, condition, row, col)%>%
+    group_by(date, experiment, round, assay, condition)%>%
     mutate(s1h = sum(onehs),
            s2h = sum(twohs),
            s3h = sum(threehs),
@@ -51,7 +51,7 @@ bamfPrune <- function(plate) {
            s5l = sum(fivels),
            s6h = sum(sixhs),
            s6l = sum(sixls))%>%
-    group_by(date, experiment, round, assay, plate, condition, row, col)%>%
+    group_by(date, experiment, round, assay, condition)%>%
     mutate(p1h = ifelse(sum(onehs)/n()>=.05,1,0),
            p2h = ifelse(sum(twohs)/n()>=.05,1,0),
            p3h = ifelse(sum(threehs)/n()>=.05,1,0),

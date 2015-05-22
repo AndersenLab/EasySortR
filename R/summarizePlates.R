@@ -210,5 +210,6 @@ summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, end
         analysis <- analysis[order(analysis$row, analysis$col),]
     }
     analysis[analysis$mean.TOF==-1 | is.na(analysis$mean.TOF),which(colnames(analysis)=="n"):ncol(analysis)] <- NA
+    analysis <- reshape2::melt(analysis, id.vars=c("date", "experiment", "round", "assay", "plate", "condition", "control", "strain", "row", "col"))
     return(analysis)
 }
