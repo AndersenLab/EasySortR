@@ -82,6 +82,6 @@ bamfPrune <- function(data) {
                                              ifelse(fourhs == 1 & fivehs == 0 & (s5h + s4h + s3h + s2h)/numst <= .05, TRUE,
                                                     ifelse(fourls == 1  & fivels == 0 & (s5l + s4l + s3l + s2l)/numst <= .05, TRUE, FALSE))))))
     
-    output <- dataWithOutliers %>% dplyr::select(date, experiment, round, assay, condition, row, col, cuts, cuts1, cuts2) %>% dplyr::rename(bamfOutlier1 = cuts, bamfOutlier2 = cuts1, bamfOutlier3 = cuts2) %>% dplyr::left_join(data, .) %>% dplyr::arrange(data, row, col)
+    output <- dataWithOutliers %>% dplyr::select(date, experiment, round, assay, condition, row, col, cuts, cuts1, cuts2) %>% dplyr::rename(bamfOutlier1 = cuts, bamfOutlier2 = cuts1, bamfOutlier3 = cuts2) %>% dplyr::left_join(data, .) %>% dplyr::arrange(condition, row, col)
     return(output)
 }
