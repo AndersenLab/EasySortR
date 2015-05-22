@@ -1,6 +1,6 @@
-#' Removes outliers based on binned IQR
+#' Binned Anomaly, Mitigate and Fit Pruning
 #'
-#' 
+#' Prune based on binned IQR multiples eminating from the center of the distribution. Anomalies not removd if they account for more than 5% of the population.
 #' 
 #' @param plate A melted data frame to be analyzed for outliers
 #' @return A single data frame for a single plate file with the outlier data NA'd out.
