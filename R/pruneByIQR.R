@@ -4,6 +4,7 @@
 #' 
 #' @param plate A melted data frame to be analyzed for outliers
 #' @return A single data frame for a single plate file with the outlier data NA'd out.
+#' @import dplyr
 #' @export
 
 bamfPrune <- function(plate) {

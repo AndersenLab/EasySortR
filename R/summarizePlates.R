@@ -8,6 +8,7 @@
 #' @param log Boolean indicating whether or not log-transformed values should be included in the summarized data frame. Defaults to FALSE.
 #' @param ends Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.
 #' @import dplyr
+#' @import COPASutils
 #' @export
 
 summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE) {

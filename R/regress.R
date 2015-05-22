@@ -4,6 +4,7 @@
 #' @param dataFrame A data frame in long form that contains all of the experimental and control values.
 #' @param assay Boolean stating whether to regress out assay as well as controls.
 #' @return A data frame in long form 
+#' @import dplyr
 #' @export
 
 regress <- function(dataFrame, assay=FALSE){

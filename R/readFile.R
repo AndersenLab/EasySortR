@@ -9,6 +9,9 @@
 #' @param extmin The maximum extinction value allowed. Defaults to 10000.
 #' @param SVM Boolean specifying whether or not to use the support vector machine to separate worms and bubbles.
 #' @return Returns a single data frame for a single plate file.
+#' @import kernlab
+#' @import COPASutils
+#' @import dplyr
 #' @export
 
 readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE, levels=2, oldNames=FALSE){
@@ -55,9 +58,9 @@ readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=T
         controls  <- readTemplate(controlsFile, type="controls")
         
         modplate <- cbind(plateInfo[,1:5], modplate)
-        modplate <- left_join(modplate, strains, by=c("row", "col"))
-        modplate <- left_join(modplate, conditions, by=c("row", "col"))
-        modplate <- left_join(modplate, controls, by=c("row", "col"))
+        modplate <- dplyr::left_join(modplate, strains, by=c("row", "col"))
+        modplate <- dplyr::left_join(modplate, conditions, by=c("row", "col"))
+        modplate <- dplyr::left_join(modplate, controls, by=c("row", "col"))
     }
     
     return(modplate)
