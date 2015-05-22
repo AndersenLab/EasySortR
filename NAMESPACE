@@ -2,6 +2,7 @@
 
 export(bamfPrune)
 export(info)
+export(mvPrune)
 export(newInfo)
 export(readData)
 export(readDirectory)
@@ -14,4 +15,5 @@ import(COPASutils)
 import(broom)
 import(dplyr)
 import(kernlab)
+import(mvoutlier)
 import(reshape2)
