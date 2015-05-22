@@ -5,7 +5,7 @@
 \title{summarizePlates}
 \usage{
 summarizePlates(plate, strains = NULL, quantiles = FALSE, log = FALSE,
-  ends = FALSE)
+  ends = FALSE, long = FALSE)
 }
 \arguments{
 \item{plate}{The raw plate data frame to be summarized.}
@@ -17,6 +17,8 @@ summarizePlates(plate, strains = NULL, quantiles = FALSE, log = FALSE,
 \item{log}{Boolean indicating whether or not log-transformed values should be included in the summarized data frame. Defaults to FALSE.}
 
 \item{ends}{Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.}
+
+\item{long}{Boolean indicating whether to return the data in long format. Defaults to FALSE.}
 }
 \description{
 This function summarizes plates when the associated setup plates are not included in the analysis. The function takes the \code{plate} argument and returns a summarized version of the plate, with one well per line. The original plate data must be in wide format.

@@ -7,11 +7,12 @@
 #' @param quantiles Boolean indicating whether or not quantile values (q10, q25, q75, q90) should be included in the summarized data frame. Defaults to FALSE.
 #' @param log Boolean indicating whether or not log-transformed values should be included in the summarized data frame. Defaults to FALSE.
 #' @param ends Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.
+#' @param long Boolean indicating whether to return the data in long format. Defaults to FALSE.
 #' @import dplyr
 #' @import COPASutils
 #' @export
 
-summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE) {
+summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE, long=FALSE) {
     plate <- plate[plate$call50=="object" | plate$TOF == -1 | is.na(plate$call50),]
     plate <- COPASutils::fillWells(plate)
     processed <- plate %>% group_by(date, experiment, round, assay, plate, condition, control, strain, row, col) %>% summarise(n=ifelse(length(TOF[!is.na(TOF)])==0, NA, length(TOF[!is.na(TOF)])),
@@ -210,6 +211,9 @@ summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, end
         analysis <- analysis[order(analysis$row, analysis$col),]
     }
     analysis[analysis$mean.TOF==-1 | is.na(analysis$mean.TOF),which(colnames(analysis)=="n"):ncol(analysis)] <- NA
-    analysis <- reshape2::melt(analysis, id.vars=c("date", "experiment", "round", "assay", "plate", "condition", "control", "strain", "row", "col"))
+    if(long){
+        analysis <- reshape2::melt(analysis, id.vars=c("date", "experiment", "round", "assay", "plate", "condition", "control", "strain", "row", "col"))
+    }
+    
     return(analysis)
 }
