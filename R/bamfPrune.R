@@ -2,7 +2,7 @@
 #'
 #' Prune based on binned IQR multiples eminating from the center of the distribution. Anomalies not removd if they account for more than 5% of the population.
 #' 
-#' @param plate A melted data frame to be analyzed for outliers
+#' @param data A melted data frame to be analyzed for outliers
 #' @return A single data frame for a single plate file with the outlier data NA'd out.
 #' @import dplyr
 #' @export
@@ -27,7 +27,7 @@ bamfPrune <- function(data) {
                cut5h = q3+(iqr*7),
                cut6l = q1-(iqr*10),
                cut6h = q3+(iqr*10))%>%
-        dplyr::left_join(plate, ., by=c("condition", "trait"))%>%
+        dplyr::left_join(data, ., by=c("condition", "trait"))%>%
         dplyr::mutate(onehs = ifelse( cut2h > phenotype & phenotype >= cut1h,1,0),
                onels = ifelse( cut2l < phenotype & phenotype <= cut1l,1,0),
                twohs = ifelse( cut3h > phenotype & phenotype >= cut2h,1,0),
@@ -66,7 +66,7 @@ bamfPrune <- function(data) {
                p4l = ifelse(sum(fourls, na.rm=TRUE)/n()>=.05,1,0),
                p5l = ifelse(sum(fivels, na.rm=TRUE)/n()>=.05,1,0),
                p6l = ifelse(sum(sixls, na.rm=TRUE)/n()>=.05,1,0))%>%
-        dplyr::mutate(numst = dplyr::n())%>%
+        dplyr::mutate(numst = n())%>%
         dplyr::group_by(condition, trait)%>%
         dplyr::filter(!is.na(trait), !is.na(phenotype), !is.na(iqr), !is.na(q1), !is.na(q3), !is.na(cut1h), !is.na(cut1l), !is.na(cut2h), !is.na(cut2l), !is.na(cut3h), !is.na(cut3l), !is.na(cut4h), !is.na(cut4l), !is.na(cut5l), !is.na(cut5h), !is.na(cut6l), !is.na(cut6h), !is.na(onehs), !is.na(onels), !is.na(twohs), !is.na(twols), !is.na(threehs), !is.na(threels), !is.na(fourhs), !is.na(fourls), !is.na(fivehs), !is.na(fivels), !is.na(sixhs), !is.na(sixls), !is.na(s1h), !is.na(s2h), !is.na(s3h), !is.na(s4h), !is.na(s5h), !is.na(s1l), !is.na(s2l), !is.na(s3l), !is.na(s4l), !is.na(s5l), !is.na(s6h), !is.na(s6l), !is.na(p1h), !is.na(p2h), !is.na(p3h), !is.na(p4h), !is.na(p5h), !is.na(p6h), !is.na(p1l), !is.na(p2l), !is.na(p3l), !is.na(p4l), !is.na(p5l), !is.na(p6l), !is.na(numst)) %>%
         dplyr::mutate(cuts = ifelse(sixhs == 1 & ((s6h + s5h + s4h )/numst) <= .05 & (s5h==0|s4h==0), TRUE,
@@ -82,6 +82,6 @@ bamfPrune <- function(data) {
                                              ifelse(fourhs == 1 & fivehs == 0 & (s5h + s4h + s3h + s2h)/numst <= .05, TRUE,
                                                     ifelse(fourls == 1  & fivels == 0 & (s5l + s4l + s3l + s2l)/numst <= .05, TRUE, FALSE))))))
     
-    output <- dataWithOutliers %>% dplyr::select(date, experiment, round, assay, plate, condition, row, col, cuts, cuts1, cuts2) %>% dplyr::rename(bamfOutlier1 = cuts, bamfOutlier2 = cuts1, bamfOutlier3 = cuts2) %>% dplyr::left_join(data, .) %>% dplyr::arrange(plate, row, col)
+    output <- dataWithOutliers %>% dplyr::select(date, experiment, round, assay, condition, row, col, cuts, cuts1, cuts2) %>% dplyr::rename(bamfOutlier1 = cuts, bamfOutlier2 = cuts1, bamfOutlier3 = cuts2) %>% dplyr::left_join(data, .) %>% dplyr::arrange(data, row, col)
     return(output)
 }
