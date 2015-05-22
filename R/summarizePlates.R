@@ -10,6 +10,7 @@
 #' @param long Boolean indicating whether to return the data in long format. Defaults to FALSE.
 #' @import dplyr
 #' @import COPASutils
+#' @import tidyr
 #' @export
 
 summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, ends=FALSE, long=FALSE) {
@@ -212,7 +213,7 @@ summarizePlates <- function(plate, strains=NULL, quantiles=FALSE, log=FALSE, end
     }
     analysis[analysis$mean.TOF==-1 | is.na(analysis$mean.TOF),which(colnames(analysis)=="n"):ncol(analysis)] <- NA
     if(long){
-        analysis <- reshape2::melt(analysis, id.vars=c("date", "experiment", "round", "assay", "plate", "condition", "control", "strain", "row", "col"))
+        analysis <- tidyr::gather(analysis, trait, phenotype, -c(date, experiment, round, assay, plate, condition, control, strain, row, col))
     }
     
     return(analysis)

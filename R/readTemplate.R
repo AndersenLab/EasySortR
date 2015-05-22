@@ -3,13 +3,13 @@
 #' @param templateFile The template file to be read.
 #' @param type The type of template being read. Can be either "strains", "conditions", "controls."
 #' @return Returns a data frame with 3 columns corresponing to the row, column, and value for either of the three types.
-#' @import reshape2
+#' @import tidyr
 #' @export
 
 
 readTemplate <- function(templateFile, type){
     template <- read.csv(templateFile, check.names=FALSE)
-    meltTemplate <- reshape2::melt(template, id.vars = "row")
+    meltTemplate <- tidyr::gather(template, col, variable, -row)
     if(type=="strains"){
         colnames(meltTemplate) <- c("row", "col", "strain")
     } else if(type=="conditions"){
