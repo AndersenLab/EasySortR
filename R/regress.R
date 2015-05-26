@@ -10,11 +10,12 @@
 #' @export
 
 regress <- function(dataFrame, assay=FALSE){
+    dataFrame <- ensureLong(dataFrame)
     data <- dataFrame %>% dplyr::filter(!is.na(control))
     controls <- dataFrame %>% dplyr::filter(is.na(control))
     controls$control <- controls$condition
-    moltenData <- tidyr::gather(data, trait, phenotype, -c(date, experiment, round, assay, plate, condition, control, strain, row, col))
-    moltenControls <- tidyr::gather(controls, trait, controlPhenotype, -c(date, experiment, round, assay, plate, condition, control, strain, row, col)) %>% select(strain, control, trait, controlPhenotype) %>% group_by(strain, control, trait) %>% summarize(controlPhenotype = mean(controlPhenotype, na.rm=TRUE))
+    moltenData <- data
+    moltenControls <- controls %>% group_by(strain, control, trait) %>% summarize(controlPhenotype = mean(phenotype, na.rm=TRUE))
     fusedMoltenData <- left_join(moltenData, moltenControls, by=c("strain", "control", "trait"))
     if(assay){
         modelData <- fusedMoltenData %>% group_by(condition, trait) %>% filter(!is.na(phenotype), !is.na(controlPhenotype)) %>% do(broom::augment(lm(phenotype~controlPhenotype+assay, data=.)))
