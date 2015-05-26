@@ -94,10 +94,10 @@ bamfPrune <- function(data) {
         
         # Add three columns stating whether the observation is an outlier based on:
         # 1) If the outlier is extreme (more extreme than +/- 10*IQR) and the the three outermost bins (4 [5x], 5 [7x], and 6 [10x]) make up less than 5% of the observations
-        # 2) If if outliers in the three outermost bins (4 [5x], 5 [7x], and 6 [10x]) make up less than 5% of the population and there is no continuity between these three bins or there is no continuity between all of the lower mulitple bins up to bin 5 [7x] or there is continuity between all bins with one skip
-        # 3) 
-        dplyr::mutate(cuts = ifelse(sixhs == 1 & ((s6h + s5h + s4h )/numst) <= .05 & (s5h==0|s4h==0), TRUE,
-                             ifelse(sixls == 1 & ((s6l + s5l +s4l)/numst) <= .05 & (s5l==0|s4l==0), TRUE, FALSE)),
+        # 2) If outliers in the three outermost bins (4 [5x], 5 [7x], and 6 [10x]) make up less than 5% of the population and there is no continuity between these three bins or there is no continuity between all of the lower mulitple bins up to bin 5 [7x] or there is continuity between all bins with one skip
+        # 3) If the l
+        dplyr::mutate(cuts = ifelse(sixhs >= 1 & ((s6h + s5h + s4h )/numst) <= .05 & (s5h==0|s4h==0), TRUE,
+                             ifelse(sixls >= 1 & ((s6l + s5l +s4l)/numst) <= .05 & (s5l==0|s4l==0), TRUE, FALSE)),
                cuts1 = ifelse( ((s6h + s5h + s4h )/numst) >= .05 & s6h>=1&s5h>=1&s4h>=1, FALSE,
                                ifelse((s5h>=1&s4h>=1&s3h>=1&s2h>=1&s1h>=1) | (s5h>=1&s3h>=1&s2h>=1&s1h>=1)|(s5h>=1&s4h>=1&s2h>=1&s1h>=1)| (s5h>=1&s4h>=1&s3h>=1&s1h>=1) |(s5h>=1&s4h>=1&s3h>=1&s2h>=1),FALSE,
                                       ifelse((s5h>=1&s4l>=1&s3l>=1&s2l>=1&s1l>=1) |(s5h>=1&s3l>=1&s2l>=1&s1l>=1) | (s5h>=1&s4l>=1&s2l>=1&s1l>=1)|(s5h>=1&s4l>=1&s3l>=1&s1l>=1) | (s5h>=1&s4l>=1&s3l>=1&s2l>=1) ,FALSE,
