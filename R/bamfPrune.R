@@ -188,39 +188,50 @@ bamfPrune <- function(data) {
 
 
 categorize1 <- function(data) {
-    (sixhs >= 1 & ((s6h + s5h + s4h ) / numst) <= .05 & (s5h == 0 | s4h == 0))
-    | (sixls >= 1 & ((s6l + s5l + s4l) / numst) <= .05 & (s5l == 0 | s4l == 0))
+    with(data,
+         (sixhs >= 1 & ((s6h + s5h + s4h ) / numst) <= .05
+          & (s5h == 0 | s4h == 0))
+         | (sixls >= 1 & ((s6l + s5l + s4l) / numst) <= .05
+            & (s5l == 0 | s4l == 0))
+    )
 }
 
 categorize2 <- function(data) {
-    ((!(((s6h + s5h + s4h) / numst) >= .05 & s6h >= 1 & s5h >= 1 & s4h >= 1)) 
-     & ((!((s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-           | (s5h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-           | (s5h >= 1 & s4h >= 1 & s2h >= 1 & s1h >= 1)
-           | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s1h >= 1)
-           | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1)))
-        & (fivehs == 1 & ((s6h + s4h + s5h + s3h) / numst) <= .05)
-    | ((!((s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-         | (s5h >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-         | (s5h >= 1 & s4l >= 1 & s2l >= 1 & s1l >= 1)
-         | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s1l >= 1)
-         | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1))) 
-    & (fivels == 1 & ((s6l + s4l + s5l + s3l) / numst) <= .05))))
+    with(data,
+         ((!(((s6h + s5h + s4h) / numst) >= .05 & s6h >= 1 & s5h >= 1
+             & s4h >= 1)) 
+          & ((!((s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
+                | (s5h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
+                | (s5h >= 1 & s4h >= 1 & s2h >= 1 & s1h >= 1)
+                | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s1h >= 1)
+                | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1)))
+             & (fivehs == 1 & ((s6h + s4h + s5h + s3h) / numst) <= .05)
+             | ((!((s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s4l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1))) 
+                & (fivels == 1 & ((s6l + s4l + s5l + s3l) / numst) <= .05))))
+    )
 }
 
 categorize3 <- function(data) {
-    ((!(((s6h + s5h + s4h) / numst) >= .05 & s6h >= 1 & s5h >= 1 & s4h >= 1))
-     & ((!((s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-           | (s4h >= 1 & s2h >= 1 & s1h >= 1)
-           | (s4h >= 1 & s3h >= 1 & s1h >= 1)
-           | (s4h >= 1 & s3h >= 1 & s2h >= 1)))
-        & (fourhs == 1 & fivehs == 0 & (s5h + s4h + s3h + s2h) / numst <= .05))
-     | ((!((s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-           | (s4l >= 1 & s2l >= 1 & s1l >= 1)
-           | (s4l >= 1 & s3l >= 1 & s1l >= 1)
-           | (s4l >= 1 & s3l >= 1 & s2l >= 1)))
-        & (fourls == 1  & fivels == 0
-           & (s5l + s4l + s3l + s2l) / numst <= .05)))
+    with(data,
+         ((!(((s6h + s5h + s4h) / numst) >= .05
+             & s6h >= 1 & s5h >= 1 & s4h >= 1))
+          & ((!((s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
+                | (s4h >= 1 & s2h >= 1 & s1h >= 1)
+                | (s4h >= 1 & s3h >= 1 & s1h >= 1)
+                | (s4h >= 1 & s3h >= 1 & s2h >= 1)))
+             & (fourhs == 1 & fivehs == 0
+                & (s5h + s4h + s3h + s2h) / numst <= .05))
+          | ((!((s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                | (s4l >= 1 & s2l >= 1 & s1l >= 1)
+                | (s4l >= 1 & s3l >= 1 & s1l >= 1)
+                | (s4l >= 1 & s3l >= 1 & s2l >= 1)))
+             & (fourls == 1  & fivels == 0
+                & (s5l + s4l + s3l + s2l) / numst <= .05)))
+    )
 }
 
 
