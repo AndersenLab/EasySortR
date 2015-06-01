@@ -10,12 +10,14 @@
 readTemplate <- function(templateFile, type){
     template <- read.csv(templateFile, check.names=FALSE)
     meltTemplate <- tidyr::gather(template, col, variable, -row)
-    if(type=="strains"){
+    if(type == "strains"){
         colnames(meltTemplate) <- c("row", "col", "strain")
-    } else if(type=="conditions"){
+    } else if (type == "conditions"){
         colnames(meltTemplate) <- c("row", "col", "condition")
-    } else if(type=="controls"){
+    } else if (type == "controls"){
         colnames(meltTemplate) <- c("row", "col", "control")
+    } else if (type == "contam") {
+        colnames(meltTemplate) <- c("row", "col", "contamination")
     }
     return(meltTemplate)
 }
