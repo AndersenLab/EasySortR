@@ -14,9 +14,9 @@
 #' file, a directory containing .txt files to be read, or the directory
 #' containing the score and setup directories.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 60.
-#' @param tofmin The minimum time of flight value allowed. Defaults to 2000.
+#' @param tofmax The maximum time of flight value allowed. Defaults to 2000.
 #' @param extmin The minimum extinction value allowed. Defaults to 0.
-#' @param extmin The maximum extinction value allowed. Defaults to 10000.
+#' @param extmax The maximum extinction value allowed. Defaults to 10000.
 #' @param SVM Boolean specifying whether or not to use the support vector
 #' machine to separate worms and bubbles.
 #' @return If a single file is given, a single data frame for only the provided

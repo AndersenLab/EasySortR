@@ -313,8 +313,6 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #'
 #' @param plates A list consisting of all of the score plates in the first
 #' element and the setup plates in the second elements.
-#' @param strains A character vector of length equal to the number of wells in
-#' the plate being summarized. Defaults to NULL.
 #' @param quantiles Boolean indicating whether or not quantile values (q10, q25,
 #' q75, q90) should be included in the summarized data frame. Defaults to FALSE.
 #' @param log Boolean indicating whether or not log-transformed values should be
@@ -324,9 +322,9 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #' @importFrom dplyr %>%
 #' @export
 
-summarize_sorted <- function(plates, strains=NULL, quantiles=FALSE, log=FALSE,
+summarize_sorted <- function(plates, quantiles=FALSE, log=FALSE,
                              ends=FALSE){
-    score <- summarize_plates(plates[[1]], strains, quantiles, log, ends) %>%
+    score <- summarize_plates(plates[[1]], quantiles, log, ends) %>%
         dplyr::arrange(plate, row, col)
     setup <- plates[[2]] %>%
         dplyr::group_by(date, experiment, round, assay,
