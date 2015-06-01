@@ -4,10 +4,10 @@
 \alias{regress}
 \title{Regress control values and, optionally, assay values from experimental values}
 \usage{
-regress(dataFrame, assay = FALSE)
+regress(dataframe, assay = FALSE)
 }
 \arguments{
-\item{dataFrame}{A data frame in long form that contains all of the experimental and control values.}
+\item{dataframe}{A data frame in long form that contains all of the experimental and control values.}
 
 \item{assay}{Boolean stating whether to regress out assay as well as controls.}
 }
