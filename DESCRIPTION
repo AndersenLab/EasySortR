@@ -3,16 +3,13 @@ Title: A Package to Read, Process, and Manage Data from the Andersen Lab's Worm 
 Version: 0.0.0.9000
 Authors@R: person("Tyler", "Shimko", email = "TShimko126@gmail.com", role = c("aut", "cre"))
 Description: Functions to load, process, and manage data from the Andersen Lab's (Northwestern University, Evanston, IL) COPAS BIOSORT worm sorter.
-Depends: R (>= 3.2.0),
+Depends: R (>= 3.2.0)
+Imports:
+    broom,
 	COPASutils,
 	dplyr,
 	kernlab,
-	reshape2
-Imports: 
-	COPASutils,
-	dplyr,
-	kernlab,
-	reshape2
+	tidyr
 Suggests: testthat
-License: MIT
+License: MIT + file LICENSE
 LazyData: true
