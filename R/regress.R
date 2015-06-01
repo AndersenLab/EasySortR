@@ -4,9 +4,7 @@
 #' @param dataframe A data frame in long form that contains all of the experimental and control values.
 #' @param assay Boolean stating whether to regress out assay as well as controls.
 #' @return A data frame in long form
-#' @import broom
-#' @import dplyr
-#' @import tidyr
+#' @importFrom dplyr %>%
 #' @export
 
 regress <- function(dataframe, assay=FALSE){
@@ -17,28 +15,27 @@ regress <- function(dataframe, assay=FALSE){
                 dplyr::filter(is.na(control))
     controls$control <- controls$condition
     moltendata <- data
-    moltencontrols <- controls %>% group_by(strain, control, trait) %>%
-                      summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
-    fusedmoltendata <- left_join(moltendata, moltencontrols,
+    moltencontrols <- controls %>% dplyr::group_by(strain, control, trait) %>%
+        dplyr::summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
+    fusedmoltendata <- dplyr::left_join(moltendata, moltencontrols,
                                  by=c("strain", "control", "trait"))
     if(assay){
         modeldata <- fusedmoltendata %>%
-                     group_by(condition, trait) %>%
-                     filter(!is.na(phenotype), !is.na(controlphenotype)) %>%
-                     do(broom::augment(lm(phenotype ~ controlphenotype + assay,
+            dplyr::group_by(condition, trait) %>%
+            dplyr::filter(!is.na(phenotype), !is.na(controlphenotype)) %>%
+            dplyr::do(broom::augment(lm(phenotype ~ controlphenotype + assay,
                         data=.)))
     } else {
         modeldata <- fusedmoltendata %>%
-                     group_by(condition, trait) %>%
-                     filter(!is.na(phenotype), !is.na(controlphenotype)) %>%
-                     do(broom::augment(
-                        lm(phenotype ~ controlphenotype, data=.)))
+            dplyr::group_by(condition, trait) %>%
+            dplyr::filter(!is.na(phenotype), !is.na(controlphenotype)) %>%
+            dplyr::do(broom::augment(lm(phenotype ~ controlphenotype, data=.)))
     }
     resids <- modeldata %>%
-              select(condition, trait, phenotype, controlphenotype, .resid) %>%
-              rename(resid = .resid)
-    regressedframe <- left_join(fusedmoltendata, resids) %>%
-                      group_by(row, col, trait) %>%
-                      distinct()
+        dplyr::select(condition, trait, phenotype, controlphenotype, .resid) %>%
+        dplyr::rename(resid = .resid)
+    regressedframe <- dplyr::left_join(fusedmoltendata, resids) %>%
+        dplyr::group_by(row, col, trait) %>%
+        dplyr::distinct()
     return(regressedframe)
 }
