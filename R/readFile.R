@@ -48,19 +48,27 @@ readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=T
     } else {
         plateInfo <- newInfo(file, levels)
         
+        templateDir <- strsplit(file,'/')[[1]]
+        templateDir <- templateDir[-c(length(templateDir), length(templateDir)-1)]
+        templateDir <- paste0(templateDir, collapse = "/")
+        templateDir <- paste0(templateDir, "/")
+        
         #### Put in new file path to templates once known
-        strainsFile <- paste0("~/Templates/", plateInfo$strainTemplate[1], ".csv")
-        conditionsFile <- paste0("~/Templates/", plateInfo$conditionTemplate[1], ".csv")
-        controlsFile <- paste0("~/Templates/", plateInfo$controlTemplate[1], ".csv")
+        strainsFile <- paste0(templateDir, plateInfo$strainTemplate[1], ".csv")
+        conditionsFile <- paste0(templateDir, plateInfo$conditionTemplate[1], ".csv")
+        controlsFile <- paste0(templateDir, plateInfo$controlTemplate[1], ".csv")
+        contamFile <- paste0(templateDir, sprintf("p%02d", plateInfo$plate[1]), "_contamination.csv")
         
         strains <- readTemplate(strainsFile, type="strains")
         conditions  <- readTemplate(conditionsFile, type="conditions")
-        controls  <- readTemplate(controlsFile, type="controls")
+        controls <- readTemplate(controlsFile, type="controls")
+        contam <- readTemplate(contamFile, type="contam")
         
         modplate <- cbind(plateInfo[,1:5], modplate)
-        modplate <- dplyr::left_join(modplate, strains, by=c("row", "col"))
-        modplate <- dplyr::left_join(modplate, conditions, by=c("row", "col"))
-        modplate <- dplyr::left_join(modplate, controls, by=c("row", "col"))
+        modplate <- dplyr::left_join(modplate, strains, by = c("row", "col"))
+        modplate <- dplyr::left_join(modplate, conditions, by = c("row", "col"))
+        modplate <- dplyr::left_join(modplate, controls, by = c("row", "col"))
+        modplate <- dplyr::left_join(modplate, contam, by = c("row", "col"))
     }
     
     return(modplate)
