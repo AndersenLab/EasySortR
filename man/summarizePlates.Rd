@@ -4,13 +4,11 @@
 \alias{summarizePlates}
 \title{summarizePlates}
 \usage{
-summarizePlates(plate, strains = NULL, quantiles = FALSE, log = FALSE,
-  ends = FALSE, long = FALSE)
+summarizePlates(plate, quantiles = FALSE, log = FALSE, ends = FALSE,
+  long = FALSE)
 }
 \arguments{
 \item{plate}{The raw plate data frame to be summarized.}
-
-\item{strains}{A character vector of length equal to the number of wells in in the plate being summarized.}
 
 \item{quantiles}{Boolean indicating whether or not quantile values (q10, q25, q75, q90) should be included in the summarized data frame. Defaults to FALSE.}
 
@@ -19,6 +17,8 @@ summarizePlates(plate, strains = NULL, quantiles = FALSE, log = FALSE,
 \item{ends}{Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.}
 
 \item{long}{Boolean indicating whether to return the data in long format. Defaults to FALSE.}
+
+\item{strains}{A character vector of length equal to the number of wells in in the plate being summarized.}
 }
 \description{
 This function summarizes plates when the associated setup plates are not included in the analysis. The function takes the \code{plate} argument and returns a summarized version of the plate, with one well per line. The original plate data must be in wide format.
