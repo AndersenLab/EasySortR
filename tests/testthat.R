@@ -1,4 +1,4 @@
 library(testthat)
-library(SorterDataAssemblr)
+library(easysorter)
 
-test_check("SorterDataAssemblr")
+test_check("easysorter")
