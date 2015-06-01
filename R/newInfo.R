@@ -2,8 +2,13 @@
 #'
 #'
 #' @param filePath The path of the file
-#' @param levels The number of levels above the file name that identifying information is found. For "~/Dropbox/HTA/Results/20140317_GWAS1a/score/p01_strains_condition_control.txt" this would be 2, since 'score' is one level up and '20140317_GWAS1a' is 2 levels up.
-#' @return A one row data frame with a column for the date, experiment, round, assay, plate, strain template, condition template, and control template. 
+#' @param levels The number of levels above the file name that identifying
+#' information is found. For
+#' "~/Dropbox/HTA/Results/20140317_GWAS1a/score/p01_strains_condition_control.txt"
+#' this would be 2, since 'score' is one level up and '20140317_GWAS1a' is 2
+#' levels up.
+#' @return A one row data frame with a column for the date, experiment, round,
+#' assay, plate, strain template, condition template, and control template. 
 #' @export
 
 newInfo <- function(filePath, levels = 1){

@@ -9,10 +9,12 @@ readTemplate(templateFile, type)
 \arguments{
 \item{templateFile}{The template file to be read.}
 
-\item{type}{The type of template being read. Can be either "strains", "conditions", "controls."}
+\item{type}{The type of template being read. Can be either "strains",
+"conditions", "controls."}
 }
 \value{
-Returns a data frame with 3 columns corresponing to the row, column, and value for either of the three types.
+Returns a data frame with 3 columns corresponing to the row, column,
+and value for either of the three types.
 }
 \description{
 Reads a template file for labeling of individual wells

@@ -9,10 +9,15 @@ newInfo(filePath, levels = 1)
 \arguments{
 \item{filePath}{The path of the file}
 
-\item{levels}{The number of levels above the file name that identifying information is found. For "~/Dropbox/HTA/Results/20140317_GWAS1a/score/p01_strains_condition_control.txt" this would be 2, since 'score' is one level up and '20140317_GWAS1a' is 2 levels up.}
+\item{levels}{The number of levels above the file name that identifying
+information is found. For
+"~/Dropbox/HTA/Results/20140317_GWAS1a/score/p01_strains_condition_control.txt"
+this would be 2, since 'score' is one level up and '20140317_GWAS1a' is 2
+levels up.}
 }
 \value{
-A one row data frame with a column for the date, experiment, round, assay, plate, strain template, condition template, and control template.
+A one row data frame with a column for the date, experiment, round,
+assay, plate, strain template, condition template, and control template.
 }
 \description{
 Read metadata and templates for plates based on directory structure
