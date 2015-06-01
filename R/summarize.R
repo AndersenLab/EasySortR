@@ -8,9 +8,7 @@
 #' @param log Boolean indicating whether or not log-transformed values should be included in the summarized data frame. Defaults to FALSE.
 #' @param ends Boolean indicating whether or not min and max values should be included in the summarized data frame. Defaults to FALSE.
 #' @param long Boolean indicating whether to return the data in long format. Defaults to FALSE.
-#' @import dplyr
-#' @import COPASutils
-#' @import tidyr
+#' @importFrom dplyr %>%
 #' @export
 
 summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
@@ -20,9 +18,9 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
                    | is.na(plate$call50),]
     plate <- COPASutils::fillWells(plate)
     processed <- plate %>%
-        group_by(date, experiment, round, assay, plate, condition,
+        dplyr::group_by(date, experiment, round, assay, plate, condition,
                  control, strain, row, col) %>%
-        summarise(
+        dplyr::summarise(
             n = ifelse(length(TOF[!is.na(TOF)]) == 0, NA,
                        length(TOF[!is.na(TOF)])),
             n.sorted=sum(sort == 6),
@@ -323,6 +321,7 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #' included in the summarized data frame. Defaults to FALSE.
 #' @param ends Boolean indicating whether or not min and max values should be
 #' included in the summarized data frame. Defaults to FALSE.
+#' @importFrom dplyr %>%
 #' @export
 
 summarize_sorted <- function(plates, strains=NULL, quantiles=FALSE, log=FALSE,
