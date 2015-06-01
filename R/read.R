@@ -132,3 +132,18 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
     
     return(modplate)
 }
+
+read_template <- function(templatefile, type){
+    template <- read.csv(templatefile, check.names=FALSE)
+    melttemplate <- tidyr::gather(template, col, variable, -row)
+    if(type == "strains"){
+        colnames(melttemplate) <- c("row", "col", "strain")
+    } else if (type == "conditions"){
+        colnames(melttemplate) <- c("row", "col", "condition")
+    } else if (type == "controls"){
+        colnames(melttemplate) <- c("row", "col", "control")
+    } else if (type == "contam") {
+        colnames(melttemplate) <- c("row", "col", "contamination")
+    }
+    return(melttemplate)
+}
