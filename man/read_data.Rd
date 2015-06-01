@@ -14,14 +14,14 @@ containing the score and setup directories.}
 
 \item{tofmin}{The minimum time of flight value allowed. Defaults to 60.}
 
+\item{tofmax}{The maximum time of flight value allowed. Defaults to 2000.}
+
 \item{extmin}{The minimum extinction value allowed. Defaults to 0.}
+
+\item{extmax}{The maximum extinction value allowed. Defaults to 10000.}
 
 \item{SVM}{Boolean specifying whether or not to use the support vector
 machine to separate worms and bubbles.}
-
-\item{tofmin}{The minimum time of flight value allowed. Defaults to 2000.}
-
-\item{extmin}{The maximum extinction value allowed. Defaults to 10000.}
 }
 \value{
 If a single file is given, a single data frame for only the provided

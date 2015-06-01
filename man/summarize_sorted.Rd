@@ -4,15 +4,11 @@
 \alias{summarize_sorted}
 \title{Summarize a plate and a add a column for the normalized population}
 \usage{
-summarize_sorted(plates, strains = NULL, quantiles = FALSE, log = FALSE,
-  ends = FALSE)
+summarize_sorted(plates, quantiles = FALSE, log = FALSE, ends = FALSE)
 }
 \arguments{
 \item{plates}{A list consisting of all of the score plates in the first
 element and the setup plates in the second elements.}
-
-\item{strains}{A character vector of length equal to the number of wells in
-the plate being summarized. Defaults to NULL.}
 
 \item{quantiles}{Boolean indicating whether or not quantile values (q10, q25,
 q75, q90) should be included in the summarized data frame. Defaults to FALSE.}
