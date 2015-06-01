@@ -4,19 +4,21 @@
 #' distribution. Anomalies are not removed if they account for more than 5\% of 
 #' the population. 
 #' 
-#' @param data A melted data frame to be analyzed for outliers
-#' @return A single data frame for a single plate file with the outlier data 
-#' NA'd out.
+#' @param data A melted data frame to be analyzed for outliers.
+#' @param drop A boolean stating whether observations from outlier data points
+#' should be dropped from the returned data set. Defaults to \code{FALSE}.
+#' @return A data frame either with (\code{drop = TRUE}) all of the outlier data
+#' points removed from the data frame or (\code{drop = FALSE}) three additional
+#' columns stating whether the data point was identified as an outlier in any of
+#' the three conditions.
 #' @importFrom dplyr %>%
 #' @export
 
-bamfPrune <- function(data) {
+bamfPrune <- function(data, drop = FALSE) {
     
     # Make sure that the data being fed into the pruning function is in long
     # format
-    
     data <- ensureLong(data)
-    
     
     dataWithOutliers <- data %>%
         
@@ -147,39 +149,24 @@ bamfPrune <- function(data) {
         # between all bins with one skip
     # 3) If the l
     
-    
+    dplyr::ungroup() %>%
     
     dplyr::mutate(cuts = categorize1(.),
                   cuts1 = categorize2(.),
                   cuts2 = categorize3(.))
-        
-#     dplyr::mutate(
-#         cuts = ifelse(sixhs >= 1 & ((s6h + s5h + s4h ) / numst) <= .05 &
-#                           (s5h == 0 | s4h == 0), TRUE,
-#                       ifelse(sixls >= 1 & ((s6l + s5l + s4l)/numst) <= .05 &
-#                                  (s5l == 0 | s4l == 0), TRUE, FALSE)),
-#         cuts1 = ifelse(((s6h + s5h + s4h) / numst) >= .05 & s6h >= 1 &
-#                            s5h >= 1 & s4h >= 1, FALSE,
-#                        ifelse((s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1 &
-#                                    s1h >= 1) | (s5h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)|(s5h >= 1 & s4h >= 1 & s2h >= 1 & s1h >= 1)| (s5h >= 1 & s4h >= 1 & s3h >= 1 & s1h >= 1) | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1), FALSE,
-#                               ifelse((s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1) | (s5h >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1) | (s5h >= 1 & s4l >= 1 & s2l >= 1 & s1l >= 1) | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s1l >= 1) | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1), FALSE,
-#                                      ifelse(fivehs == 1 & ((s6h + s4h + s5h + s3h) / numst) <= .05, TRUE,
-#                                             ifelse(fivels == 1 & (s6l +s4l + s5l + s3l) / numst <= .05, TRUE, FALSE))))),
-#         cuts2 = ifelse(((s6h + s5h + s4h) / numst) >= .05 & s6h >= 1 & s5h >= 1 & s4h >= 1, FALSE,
-#                        ifelse((s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1) | (s4h >= 1 & s2h >= 1 & s1h >= 1)| (s4h >= 1 & s3h >= 1 & s1h >= 1) | (s4h >= 1 & s3h >= 1 & s2h >= 1), FALSE,
-#                               ifelse((s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1) | (s4l >= 1 & s2l >= 1 & s1l >= 1) | (s4l >= 1 & s3l >= 1 & s1l >= 1) | (s4l >= 1 & s3l >= 1 & s2l >= 1), FALSE,
-#                                      ifelse(fourhs == 1 & fivehs == 0 & (s5h + s4h + s3h + s2h) / numst <= .05, TRUE,
-#                                             ifelse(fourls == 1  & fivels == 0 & (s5l + s4l + s3l + s2l) / numst <= .05, TRUE, FALSE))))))
     
     # Select the necessary columns rename the outlier calling columns, and
     # arrange by condition, row, and columns
     output <- dataWithOutliers %>%
-        dplyr::select(date, experiment, round, assay, condition, row, col, cuts,
-                      cuts1, cuts2) %>%
+        dplyr::select(date, experiment, round, assay, condition, plate, row,
+                      col, trait, phenotype, cuts, cuts1, cuts2) %>%
         dplyr::rename(bamfOutlier1 = cuts, bamfOutlier2 = cuts1,
-                      bamfOutlier3 = cuts2) %>%
-        dplyr::left_join(data, .) %>%
-        dplyr::arrange(condition, row, col)
+                      bamfOutlier3 = cuts2) %>% 
+        dplyr::arrange(condition, row, col, trait)
+    
+    if (drop) {
+        output <- output %>% filter(!bamfOutlier1, !bamfOutlier2, !bamfOutlier3)
+    }
     
     # Return the output data frame
     return(output)

@@ -4,15 +4,23 @@
 \alias{bamfPrune}
 \title{Binned Anomaly, Mitigate and Fit Pruning}
 \usage{
-bamfPrune(data)
+bamfPrune(data, drop = FALSE)
 }
 \arguments{
-\item{data}{A melted data frame to be analyzed for outliers}
+\item{data}{A melted data frame to be analyzed for outliers.}
+
+\item{drop}{A boolean stating whether observations from outlier data points
+should be dropped from the returned data set. Defaults to \code{FALSE}.}
 }
 \value{
-A single data frame for a single plate file with the outlier data NA'd out.
+A data frame either with (\code{drop = TRUE}) all of the outlier data
+points removed from the data frame or (\code{drop = FALSE}) three additional
+columns stating whether the data point was identified as an outlier in any of
+the three conditions.
 }
 \description{
-Prune based on binned IQR multiples eminating from the center of the distribution. Anomalies not removd if they account for more than 5% of the population.
+Prune based on binned IQR multiples emanating from the center of the
+distribution. Anomalies are not removed if they account for more than 5\% of
+the population.
 }
 
