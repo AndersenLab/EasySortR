@@ -1,7 +1,7 @@
 #' Reads single plate data
 #'
 #' Reads individual sorter data files into R. Built exlusively for use with worms.
-#' 
+#'
 #' @param file The file to be read.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 60.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 2000.
@@ -14,7 +14,8 @@
 #' @import dplyr
 #' @export
 
-readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE, levels=2, oldNames=FALSE){
+read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
+                      SVM=TRUE, levels=2){
     plate <- COPASutils::readSorter(file, tofmin, tofmax, extmin, extmax)
     modplate <- with(plate,
                      data.frame(row=Row,
@@ -30,46 +31,55 @@ readFile <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=T
         dplyr::group_by(row, col) %>%
         dplyr::do(COPASutils::extractTime(.))
     modplate <- data.frame(modplate)
-    modplate[,10:13] <- apply(modplate[,c(5, 7:9)], 2, function(x){x/modplate$TOF})
-    colnames(modplate)[10:13] <- c("norm.EXT", "norm.green", "norm.yellow", "norm.red")
+    modplate[, 10:13] <- apply(modplate[, c(5, 7:9)], 2,
+                              function(x) x / modplate$TOF)
+    colnames(modplate)[10:13] <- c("norm.EXT", "norm.green", "norm.yellow",
+                                   "norm.red")
     if(SVM){
-        plateprediction <- kernlab::predict(COPASutils::bubbleSVMmodel_noProfiler, modplate[,3:length(modplate)], type="probabilities")
-        modplate$object <- plateprediction[,"1"]
-        modplate$call50 <- factor(as.numeric(modplate$object>0.5), levels=c(1,0), labels=c("object", "bubble"))
+        plateprediction <- kernlab::predict(
+            COPASutils::bubbleSVMmodel_noProfiler,
+            modplate[,3:length(modplate)],
+            type="probabilities")
+        modplate$object <- plateprediction[, "1"]
+        modplate$call50 <- factor(as.numeric(modplate$object > 0.5),
+                                  levels=c(1, 0), labels=c("object", "bubble"))
     }
-    modplate$stage <- ifelse(modplate$TOF>=60 & modplate$TOF<90, "L1", 
-                             ifelse(modplate$TOF>=90 & modplate$TOF<200, "L2/L3",
-                                    ifelse(modplate$TOF>=200 & modplate$TOF<300, "L4",
-                                           ifelse(modplate$TOF>=300, "adult", NA))))
-    modplate[,as.vector(which(lapply(modplate, class) == "integer"))] <- lapply(modplate[,as.vector(which(lapply(modplate, class) == "integer"))], as.numeric)
-    
-    if(oldNames){
-        modplate <- cbind(info(file, levels), modplate)
-    } else {
-        plateInfo <- newInfo(file, levels)
-        
-        templateDir <- strsplit(file,'/')[[1]]
-        templateDir <- templateDir[-c(length(templateDir), length(templateDir)-1)]
-        templateDir <- paste0(templateDir, collapse = "/")
-        templateDir <- paste0(templateDir, "/")
-        
-        #### Put in new file path to templates once known
-        strainsFile <- paste0(templateDir, plateInfo$strainTemplate[1], ".csv")
-        conditionsFile <- paste0(templateDir, plateInfo$conditionTemplate[1], ".csv")
-        controlsFile <- paste0(templateDir, plateInfo$controlTemplate[1], ".csv")
-        contamFile <- paste0(templateDir, sprintf("p%02d", plateInfo$plate[1]), "_contamination.csv")
-        
-        strains <- readTemplate(strainsFile, type="strains")
-        conditions  <- readTemplate(conditionsFile, type="conditions")
-        controls <- readTemplate(controlsFile, type="controls")
-        contam <- readTemplate(contamFile, type="contam")
-        
-        modplate <- cbind(plateInfo[,1:5], modplate)
-        modplate <- dplyr::left_join(modplate, strains, by = c("row", "col"))
-        modplate <- dplyr::left_join(modplate, conditions, by = c("row", "col"))
-        modplate <- dplyr::left_join(modplate, controls, by = c("row", "col"))
-        modplate <- dplyr::left_join(modplate, contam, by = c("row", "col"))
-    }
-    
+    modplate$stage <- ifelse(modplate$TOF >= 60 & modplate$TOF < 90, "L1",
+                             ifelse(modplate$TOF >= 90 & modplate$TOF < 200,
+                                    "L2/L3",
+                                    ifelse(modplate$TOF >= 200
+                                           & modplate$TOF < 300, "L4",
+                                           ifelse(modplate$TOF >= 300,
+                                                  "adult", NA))))
+    modplate[, as.vector(which(lapply(modplate, class) == "integer"))] <- lapply(
+        modplate[, as.vector(which(lapply(modplate, class) == "integer"))],
+        as.numeric)
+
+    plateinfo <- new_info(file, levels)
+
+    templatedir <- strsplit(file, "/")[[1]]
+    templatedir <- templatedir[-c(length(templatedir), length(templatedir) - 1)]
+    templatedir <- paste0(templatedir, collapse = "/")
+    templatedir <- paste0(templatedir, "/")
+
+    #### Put in new file path to templates once known
+    strainsfile <- paste0(templatedir, plateinfo$straintemplate[1], ".csv")
+    conditionsfile <- paste0(templatedir, plateinfo$conditiontemplate[1],
+                             ".csv")
+    controlsfile <- paste0(templatedir, plateinfo$controltemplate[1], ".csv")
+    contamfile <- paste0(templatedir, sprintf("p%02d", plateinfo$plate[1]),
+                         "_contamination.csv")
+
+    strains <- read_template(strainsfile, type="strains")
+    conditions  <- read_template(conditionsfile, type="conditions")
+    controls <- read_template(controlsfile, type="controls")
+    contam <- read_template(contamfile, type="contam")
+
+    modplate <- cbind(plateinfo[,1:5], modplate)
+    modplate <- dplyr::left_join(modplate, strains, by = c("row", "col"))
+    modplate <- dplyr::left_join(modplate, conditions, by = c("row", "col"))
+    modplate <- dplyr::left_join(modplate, controls, by = c("row", "col"))
+    modplate <- dplyr::left_join(modplate, contam, by = c("row", "col"))
+
     return(modplate)
 }

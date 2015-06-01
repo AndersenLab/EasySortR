@@ -1,5 +1,5 @@
-#' Reads a template file for labeling of individual wells 
-#' 
+#' Reads a template file for labeling of individual wells
+#'
 #' @param templateFile The template file to be read.
 #' @param type The type of template being read. Can be either "strains",
 #' "conditions", "controls."
@@ -9,17 +9,17 @@
 #' @export
 
 
-readTemplate <- function(templateFile, type){
-    template <- read.csv(templateFile, check.names=FALSE)
-    meltTemplate <- tidyr::gather(template, col, variable, -row)
+read_template <- function(templatefile, type){
+    template <- read.csv(templatefile, check.names=FALSE)
+    melttemplate <- tidyr::gather(template, col, variable, -row)
     if(type == "strains"){
-        colnames(meltTemplate) <- c("row", "col", "strain")
+        colnames(melttemplate) <- c("row", "col", "strain")
     } else if (type == "conditions"){
-        colnames(meltTemplate) <- c("row", "col", "condition")
+        colnames(melttemplate) <- c("row", "col", "condition")
     } else if (type == "controls"){
-        colnames(meltTemplate) <- c("row", "col", "control")
+        colnames(melttemplate) <- c("row", "col", "control")
     } else if (type == "contam") {
-        colnames(meltTemplate) <- c("row", "col", "contamination")
+        colnames(melttemplate) <- c("row", "col", "contamination")
     }
-    return(meltTemplate)
+    return(melttemplate)
 }

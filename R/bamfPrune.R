@@ -1,7 +1,7 @@
 #' Binned Anomaly, Mitigate and Fit Pruning
 #'
 #' Prune based on binned IQR multiples emanating from the center of the 
-#' distribution. Anomalies are not removed if they account for more than 5\% of 
+#' distribution. Anomalies are not removed if they account for more than 5\% of
 #' the population. 
 #' 
 #' @param data A melted data frame to be analyzed for outliers.
@@ -14,7 +14,7 @@
 #' @importFrom dplyr %>%
 #' @export
 
-bamfPrune <- function(data, drop = FALSE) {
+bamf_prune <- function(data, drop = FALSE) {
     
     # Make sure that the data being fed into the pruning function is in long
     # format

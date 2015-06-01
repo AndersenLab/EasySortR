@@ -10,7 +10,7 @@
 #' objects are more likely to be bubbles or worms and labels them accordingly.
 #' It also estimates the lifestage of each worm.
 #' 
-#' @param fileDir The file or directory to be read. This can be an individual
+#' @param filedir The file or directory to be read. This can be an individual
 #' file, a directory containing .txt files to be read, or the directory
 #' containing the score and setup directories.
 #' @param tofmin The minimum time of flight value allowed. Defaults to 60.
@@ -28,23 +28,24 @@
 #' of the plates in the directory will be returned.
 #' @export
 
-readData <- function(fileDir, tofmin=60, tofmax=2000, extmin=0, extmax=10000, SVM=TRUE) {
-    if (length(dir(fileDir)) == 0){
-        data <- readFile(fileDir, tofmin, tofmax, extmin, extmax, SVM)
-    } else if ("score" %in% dir(fileDir) && "setup" %in% dir(fileDir)) {
-        if (grep("/$", fileDir) == 1){
-            fileDir <- substr(fileDir, 1, nchar(fileDir)-1)
+read_data <- function(filedir, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
+    SVM=TRUE) {
+    if (length(dir(filedir)) == 0){
+        data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM)
+    } else if ("score" %in% dir(filedir) && "setup" %in% dir(filedir)) {
+        if (grep("/$", filedir) == 1){
+            filedir <- substr(filedir, 1, nchar(filedir) - 1)
         }
-        scorePath <- file.path(fileDir, "score")
-        setupPath <- file.path(fileDir, "setup")
-        score <- readDirectory(scorePath, tofmin, tofmax, extmin, extmax, SVM)
-        setup <- readDirectory(setupPath, tofmin, tofmax, extmin, extmax, SVM)
+        scorepath <- file.path(filedir, "score")
+        setuppath <- file.path(filedir, "setup")
+        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM)
+        setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM)
         data <- list(score, setup)
     } else {
-        if (grep("/$", fileDir) == 1){
-            fileDir <- substr(fileDir, 1, nchar(fileDir)-1)
+        if (grep("/$", filedir) == 1){
+            filedir <- substr(filedir, 1, nchar(filedir) - 1)
         }
-        data <- readDirectory(fileDir, tofmin, tofmax, extmin, extmax, SVM)
+        data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM)
     }
     return(data)
 }
