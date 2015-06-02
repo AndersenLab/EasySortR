@@ -3,6 +3,5 @@
 export(bamf_prune)
 export(read_data)
 export(regress)
-export(summarize_plates)
-export(summarize_sorted)
+export(sumplate)
 importFrom(dplyr,"%>%")
