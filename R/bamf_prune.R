@@ -164,6 +164,7 @@ bamf_prune <- function(data, drop = FALSE) {
                       col, trait, phenotype, cuts, cuts1, cuts2) %>%
         dplyr::rename(bamfoutlier1 = cuts, bamfoutlier2 = cuts1,
                       bamfoutlier3 = cuts2) %>%
+        rbind(., data[is.na(data$phenotype), ])
         dplyr::arrange(condition, row, col, trait)
 
     if (drop) {
