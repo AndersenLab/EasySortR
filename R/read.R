@@ -30,21 +30,22 @@
 
 read_data <- function(filedir, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
     SVM=TRUE) {
+    if (grep("/$", filedir) == 1){
+        filedir <- substr(filedir, 1, nchar(filedir) - 1)
+    }
     if (length(dir(filedir)) == 0){
         data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM)
-    } else if ("score" %in% dir(filedir) && "setup" %in% dir(filedir)) {
-        if (grep("/$", filedir) == 1){
-            filedir <- substr(filedir, 1, nchar(filedir) - 1)
-        }
+    } else if ("score" %in% dir(filedir) & "setup" %in% dir(filedir)) {
         scorepath <- file.path(filedir, "score")
         setuppath <- file.path(filedir, "setup")
         score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM)
         setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM)
         data <- list(score, setup)
+    } else if ("score" %in% dir(filedir) & !("setup" %in% dir(filedir))) {
+        scorepath <- file.path(filedir, "score")
+        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM)
+        data <- score
     } else {
-        if (grep("/$", filedir) == 1){
-            filedir <- substr(filedir, 1, nchar(filedir) - 1)
-        }
         data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM)
     }
     return(data)
@@ -112,11 +113,16 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
     templatedir <- paste0(templatedir, "/")
     
     #### Put in new file path to templates once known
-    strainsfile <- paste0(templatedir, plateinfo$straintemplate[1], ".csv")
-    conditionsfile <- paste0(templatedir, plateinfo$conditiontemplate[1],
+    strainsfile <- paste0(templatedir, "strains",
+                          plateinfo$straintemplate[1], ".csv")
+    conditionsfile <- paste0(templatedir, "conditions",
+                             plateinfo$conditiontemplate[1],
                              ".csv")
-    controlsfile <- paste0(templatedir, plateinfo$controltemplate[1], ".csv")
-    contamfile <- paste0(templatedir, sprintf("p%02d", plateinfo$plate[1]),
+    controlsfile <- paste0(templatedir, "controls",
+                           plateinfo$controltemplate[1], ".csv")
+    contamfile <- paste0(templatedir,
+                         "contamination",
+                         sprintf("p%02d", plateinfo$plate[1]),
                          "_contamination.csv")
     
     strains <- read_template(strainsfile, type="strains")
