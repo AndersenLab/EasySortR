@@ -324,7 +324,7 @@ sumplate <- function(plates, quantiles = FALSE, log = FALSE,
             dplyr::mutate(norm.n = n / control.n.sorted) %>%
             dplyr::select(-n.sorted, -control.n.sorted)
     } else {
-        score <- summarize_plates(plates, quantiles, log, ends, long) %>%
+        data <- summarize_plates(plates, quantiles, log, ends, long) %>%
             dplyr::arrange(plate, row, col)
     }
     return(data)
