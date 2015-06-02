@@ -113,15 +113,15 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
     templatedir <- paste0(templatedir, "/")
     
     #### Put in new file path to templates once known
-    strainsfile <- paste0(templatedir, "strains",
+    strainsfile <- paste0(templatedir, "strains/",
                           plateinfo$straintemplate[1], ".csv")
-    conditionsfile <- paste0(templatedir, "conditions",
+    conditionsfile <- paste0(templatedir, "conditions/",
                              plateinfo$conditiontemplate[1],
                              ".csv")
-    controlsfile <- paste0(templatedir, "controls",
+    controlsfile <- paste0(templatedir, "controls/",
                            plateinfo$controltemplate[1], ".csv")
     contamfile <- paste0(templatedir,
-                         "contamination",
+                         "contamination/",
                          sprintf("p%02d", plateinfo$plate[1]),
                          "_contamination.csv")
     
