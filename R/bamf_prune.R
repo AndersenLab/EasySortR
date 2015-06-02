@@ -15,10 +15,14 @@
 #' @export
 
 bamf_prune <- function(data, drop = FALSE) {
+    browser()
 
     # Make sure that the data being fed into the pruning function is in long
     # format
     data <- ensure_long(data)
+    
+    napheno <- data[is.na(data$phenotype), ] %>%
+        dplyr::mutate(bamfoutlier1 = NA, bamfoutlier2 = NA, bamfoutlier3 = NA)
 
     datawithoutliers <- data %>%
 
@@ -164,8 +168,10 @@ bamf_prune <- function(data, drop = FALSE) {
                       col, trait, phenotype, cuts, cuts1, cuts2) %>%
         dplyr::rename(bamfoutlier1 = cuts, bamfoutlier2 = cuts1,
                       bamfoutlier3 = cuts2) %>%
-        rbind(., data[is.na(data$phenotype), ])
+        dplyr::left_join(., data) %>%
         dplyr::arrange(condition, row, col, trait)
+    
+    
 
     if (drop) {
         output <- output %>%
