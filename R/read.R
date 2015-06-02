@@ -30,22 +30,39 @@
 
 read_data <- function(filedir, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
     SVM=TRUE) {
+    
+    # Remove trailing '/' if present in the file path
+    
     if (grep("/$", filedir) == 1){
         filedir <- substr(filedir, 1, nchar(filedir) - 1)
     }
+    
+    # If an individual file is given, read it in
+    
     if (length(dir(filedir)) == 0){
         data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM)
     } else if ("score" %in% dir(filedir) & "setup" %in% dir(filedir)) {
+        
+        # If both setup and score directories are subdirectories of the given
+        # directory, read in both directories and return them as a list
+        
         scorepath <- file.path(filedir, "score")
         setuppath <- file.path(filedir, "setup")
         score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM)
         setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM)
         data <- list(score, setup)
     } else if ("score" %in% dir(filedir) & !("setup" %in% dir(filedir))) {
+        
+        # If in an experiment directory but there is no setup directory, read in
+        # everything from the score directory
+        
         scorepath <- file.path(filedir, "score")
         score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM)
         data <- score
     } else {
+        
+        # Otherwise, just read in the given directory
+        
         data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM)
     }
     return(data)
@@ -53,6 +70,10 @@ read_data <- function(filedir, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
 
 read_directory <- function(directory, tofmin=60, tofmax=2000, extmin=0,
                            extmax=10000, SVM=TRUE) {
+    
+    # Get all of the txt files from adirectory and read them in individually.
+    # Then rbind them and return a data frame.
+    
     dirfiles <- dir(directory)
     files <- subset(dirfiles, grepl(".txt$", dirfiles))
     filepaths <- file.path(directory, files)
@@ -66,6 +87,9 @@ read_directory <- function(directory, tofmin=60, tofmax=2000, extmin=0,
 
 read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
                       SVM=TRUE, levels=2){
+    
+    # Read the raw sorter files and make the row names
+    
     plate <- COPASutils::readSorter(file, tofmin, tofmax, extmin, extmax)
     modplate <- with(plate,
                      data.frame(row=Row,
@@ -77,14 +101,23 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
                                 green=Green,
                                 yellow=Yellow,
                                 red=Red))
+    
+    # Extract the time so that it is realtive to the first worm sorted
+    
     modplate <- modplate %>%
         dplyr::group_by(row, col) %>%
         dplyr::do(COPASutils::extractTime(.))
     modplate <- data.frame(modplate)
+    
+    # Normalize the optical values by time of flight
+    
     modplate[, 10:13] <- apply(modplate[, c(5, 7:9)], 2,
                                function(x) x / modplate$TOF)
     colnames(modplate)[10:13] <- c("norm.EXT", "norm.green", "norm.yellow",
                                    "norm.red")
+    
+    # Handle the SVM predictions if requested
+    
     if(SVM){
         plateprediction <- kernlab::predict(
             COPASutils::bubbleSVMmodel_noProfiler,
@@ -94,6 +127,9 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
         modplate$call50 <- factor(as.numeric(modplate$object > 0.5),
                                   levels=c(1, 0), labels=c("object", "bubble"))
     }
+    
+    # Calculate the life stage values based on the size of the worms
+    
     modplate$stage <- ifelse(modplate$TOF >= 60 & modplate$TOF < 90, "L1",
                              ifelse(modplate$TOF >= 90 & modplate$TOF < 200,
                                     "L2/L3",
@@ -101,18 +137,26 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
                                            & modplate$TOF < 300, "L4",
                                            ifelse(modplate$TOF >= 300,
                                                   "adult", NA))))
+    
+    # Convert integer values to numerics
+    
     modplate[, as.vector(which(lapply(modplate, class) == "integer"))] <- lapply(
         modplate[, as.vector(which(lapply(modplate, class) == "integer"))],
         as.numeric)
     
+    # Get info about the plate using the new_info function 
+    
     plateinfo <- new_info(file, levels)
+    
+    # Get the template base directory
     
     templatedir <- strsplit(file, "/")[[1]]
     templatedir <- templatedir[-c(length(templatedir), length(templatedir) - 1)]
     templatedir <- paste0(templatedir, collapse = "/")
     templatedir <- paste0(templatedir, "/")
     
-    #### Put in new file path to templates once known
+    # Get the template file paths
+    
     strainsfile <- paste0(templatedir, "strains/",
                           plateinfo$straintemplate[1], ".csv")
     conditionsfile <- paste0(templatedir, "conditions/",
@@ -125,10 +169,14 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
                          sprintf("p%02d", plateinfo$plate[1]),
                          "_contamination.csv")
     
+    # Read all of the templates
+    
     strains <- read_template(strainsfile, type="strains")
     conditions  <- read_template(conditionsfile, type="conditions")
     controls <- read_template(controlsfile, type="controls")
     contam <- read_template(contamfile, type="contam")
+    
+    # Join all of the metadata and template info to the plate data
     
     modplate <- cbind(plateinfo[,1:5], modplate)
     modplate <- dplyr::left_join(modplate, strains, by = c("row", "col"))
@@ -140,8 +188,14 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
 }
 
 read_template <- function(templatefile, type){
+    
+    # Read in the teamplate file and melt it with tidyr
+    
     template <- read.csv(templatefile, check.names=FALSE)
     melttemplate <- tidyr::gather(template, col, variable, -row)
+    
+    # Change the column names based on the type of template and return the data
+    
     if(type == "strains"){
         colnames(melttemplate) <- c("row", "col", "strain")
     } else if (type == "conditions"){

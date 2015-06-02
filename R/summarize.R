@@ -1,17 +1,31 @@
 summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
                              ends = FALSE, long = FALSE) {
+    
+    # Select only objects, missing rows, or calls not made
+    
     plate <- plate[plate$call50 == "object"
                    | plate$TOF == -1
                    | is.na(plate$call50),]
+    
+    # Fill missing wells with NA so that all rows are represented
+    
     plate <- COPASutils::fillWells(plate)
+    
+    # Calculate all of the summary statistics for each well
+    
     processed <- plate %>%
         dplyr::group_by(date, experiment, round, assay, plate, condition,
                  control, strain, row, col) %>%
         dplyr::summarise(
+            
+            # Number and number sorted
+            
             n = ifelse(length(TOF[!is.na(TOF)]) == 0, NA,
                        length(TOF[!is.na(TOF)])),
             n.sorted=sum(sort == 6),
 
+            # Time of flight values
+            
             mean.TOF = mean(TOF, na.rm = TRUE),
             min.TOF = as.numeric(quantile(TOF, na.rm = TRUE)[1]),
             q10.TOF = as.numeric(quantile(TOF, probs = 0.1, na.rm = TRUE)[1]),
@@ -20,6 +34,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q75.TOF = as.numeric(quantile(TOF, probs = 0.75, na.rm = TRUE)[1]),
             q90.TOF = as.numeric(quantile(TOF, probs = 0.90, na.rm = TRUE)[1]),
             max.TOF = as.numeric(quantile(TOF, na.rm = TRUE)[5]),
+            
+            # Extinction values
 
             mean.EXT = mean(EXT, na.rm = TRUE),
             min.EXT = as.numeric(quantile(EXT, na.rm = TRUE)[1]),
@@ -29,6 +45,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q75.EXT = as.numeric(quantile(EXT, probs = 0.75, na.rm = TRUE)[1]),
             q90.EXT = as.numeric(quantile(EXT, probs = 0.90, na.rm = TRUE)[1]),
             max.EXT = as.numeric(quantile(EXT, na.rm = TRUE)[5]),
+            
+            # Red values
 
             mean.red = mean(red, na.rm = TRUE),
             min.red = as.numeric(quantile(red, na.rm = TRUE)[1]),
@@ -38,6 +56,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q75.red = as.numeric(quantile(red, probs = 0.75, na.rm = TRUE)[1]),
             q90.red = as.numeric(quantile(red, probs = 0.9, na.rm = TRUE)[1]),
             max.red = as.numeric(quantile(red, na.rm = TRUE)[5]),
+            
+            # Green values
 
             mean.green = mean(green, na.rm = TRUE),
             min.green = as.numeric(quantile(green, na.rm = TRUE)[1]),
@@ -51,6 +71,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.green = as.numeric(quantile(green, probs = 0.9,
                                             na.rm = TRUE)[1]),
             max.green = as.numeric(quantile(green, na.rm = TRUE)[5]),
+            
+            # Yellow values
 
             mean.yellow = mean(yellow, na.rm = TRUE),
             min.yellow = as.numeric(quantile(yellow, na.rm = TRUE)[1]),
@@ -64,6 +86,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.yellow = as.numeric(quantile(yellow, probs = 0.9,
                                              na.rm = TRUE)[1]),
             max.yellow = as.numeric(quantile(yellow, na.rm = TRUE)[5]),
+            
+            # Normalized extinction values
 
             mean.norm.EXT = mean(norm.EXT, na.rm = TRUE),
             min.norm.EXT = as.numeric(quantile(norm.EXT, na.rm = TRUE)[1]),
@@ -77,6 +101,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.norm.EXT = as.numeric(quantile(norm.EXT, probs = 0.9,
                                              na.rm = TRUE)[1]),
             max.norm.EXT = as.numeric(quantile(norm.EXT, na.rm = TRUE)[5]),
+            
+            # Normalized red values
 
             mean.norm.red = mean(norm.red, na.rm = TRUE),
             min.norm.red = as.numeric(quantile(norm.red, na.rm = TRUE)[1]),
@@ -90,6 +116,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.norm.red = as.numeric(quantile(norm.red, probs = 0.9,
                                              na.rm = TRUE)[1]),
             max.norm.red = as.numeric(quantile(norm.red, na.rm = TRUE)[5]),
+            
+            # Normalized green values
 
             mean.norm.green = mean(norm.green, na.rm = TRUE),
             min.norm.green = as.numeric(quantile(norm.green, na.rm = TRUE)[1]),
@@ -103,6 +131,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.norm.green = as.numeric(quantile(norm.green, probs = 0.9,
                                                na.rm = TRUE)[1]),
             max.norm.green = as.numeric(quantile(norm.green, na.rm = TRUE)[5]),
+            
+            # Normalized yellow values
 
             mean.norm.yellow = mean(norm.yellow, na.rm = TRUE),
             min.norm.yellow = as.numeric(quantile(norm.yellow,
@@ -118,6 +148,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
                                                 na.rm = TRUE)[1]),
             max.norm.yellow = as.numeric(quantile(norm.yellow,
                                                   na.rm = TRUE)[5]),
+            
+            # Log-transformed extinction values
 
             mean.log.EXT = mean(log(EXT), na.rm = TRUE),
             min.log.EXT = as.numeric(quantile(log(EXT), na.rm = TRUE)[1]),
@@ -131,6 +163,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.log.EXT = as.numeric(quantile(log(EXT), probs = 0.90,
                                             na.rm = TRUE)[1]),
             max.log.EXT = as.numeric(quantile(log(EXT), na.rm = TRUE)[5]),
+            
+            # Log-transformed red values
 
             mean.log.red = mean(log(red), na.rm = TRUE),
             min.log.red = as.numeric(quantile(log(red), na.rm = TRUE)[1]),
@@ -144,6 +178,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.log.red = as.numeric(quantile(log(red), probs = 0.90,
                                             na.rm = TRUE)[1]),
             max.log.red = as.numeric(quantile(log(red), na.rm = TRUE)[5]),
+            
+            # Log-transformed green values
 
             mean.log.green = mean(log(green), na.rm = TRUE),
             min.log.green = as.numeric(quantile(log(green), na.rm = TRUE)[1]),
@@ -157,6 +193,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.log.green = as.numeric(quantile(log(green), probs = 0.90,
                                               na.rm = TRUE)[1]),
             max.log.green = as.numeric(quantile(log(green), na.rm = TRUE)[5]),
+            
+            # Log-transformed yellow values
 
             mean.log.yellow = mean(log(yellow), na.rm = TRUE),
             min.log.yellow = as.numeric(quantile(log(yellow), na.rm = TRUE)[1]),
@@ -170,6 +208,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             q90.log.yellow = as.numeric(quantile(log(yellow), probs = 0.90,
                                                na.rm = TRUE)[1]),
             max.log.yellow = as.numeric(quantile(log(yellow), na.rm = TRUE)[5]),
+            
+            # Log-transformed, normalized extinction values
 
             mean.log.norm.EXT = mean(log(norm.EXT), na.rm = TRUE),
             min.log.norm.EXT = as.numeric(quantile(log(norm.EXT),
@@ -185,6 +225,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
                                                  na.rm = TRUE)[1]),
             max.log.norm.EXT = as.numeric(quantile(log(norm.EXT),
                                                    na.rm = TRUE)[5]),
+            
+            # Log-transformed, normalized red values
 
             mean.log.norm.red = mean(log(norm.red), na.rm = TRUE),
             min.log.norm.red = as.numeric(quantile(log(norm.red),
@@ -200,6 +242,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
                                                  na.rm = TRUE)[1]),
             max.log.norm.red = as.numeric(quantile(log(norm.red),
                                                    na.rm = TRUE)[5]),
+            
+            # Log-transformed, normalized green values
 
             mean.log.norm.green = mean(log(norm.green), na.rm = TRUE),
             min.log.norm.green = as.numeric(quantile(log(norm.green),
@@ -219,6 +263,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
                                                    na.rm = TRUE)[1]),
             max.log.norm.green = as.numeric(quantile(log(norm.green),
                                                    na.rm = TRUE)[5]),
+            
+            # Log-transformed, normalized yellow values
 
             mean.log.norm.yellow = mean(log(norm.yellow), na.rm = TRUE),
             min.log.norm.yellow = as.numeric(quantile(log(norm.yellow),
@@ -238,6 +284,8 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
                                                     na.rm = TRUE)[1]),
             max.log.norm.yellow = as.numeric(quantile(log(norm.yellow),
                                                     na.rm = TRUE)[5]),
+            
+            # Variance, CV, and IQR traits
 
             var.TOF = var(TOF),
             cv.TOF = (sd(TOF,na.rm = TRUE) / mean(TOF,na.rm = TRUE)),
@@ -259,26 +307,41 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
             cv.yellow = (sd(yellow, na.rm = TRUE) / mean(yellow, na.rm = TRUE)),
             iqr.yellow = quantile(yellow, na.rm = TRUE, probs = .75) -
                 quantile(yellow, na.rm = TRUE, probs = .25),
+            
+            # Life stage fractions
 
             f.L1 = length(which(stage == "L1")) / length(stage),
             f.L2L3 = length(which(stage == "L2/L3")) / length(stage),
             f.L4 = length(which(stage == "L4")) / length(stage),
             f.ad = length(which(stage == "adult")) / length(stage))
 
+    # Remove the min and max values if not requested
+    
     if(!ends){
         processed <- processed[, -(grep("min", colnames(processed)))]
         processed <- processed[, -(grep("max", colnames(processed)))]
     }
+    
+    # Remove the quantile values if not requested
+    
     if(!quantiles){
         processed <- processed[, -(grep("q", colnames(processed)))]
     }
+    
+    # Remove the log transformed values if not requested
+    
     if(!log){
         processed <- processed[, -(grep("log", colnames(processed)))]
     }
+    
+    # Order the data and NA out missing data from platestitcher.py
     analysis <- processed
     analysis <- analysis[order(analysis$row, analysis$col), ]
     analysis[analysis$mean.TOF == -1 | is.na(analysis$mean.TOF),
              which(colnames(analysis) == "n"):ncol(analysis)] <- NA
+    
+    # Melt the data with tidyr, if requested by user
+    
     if(long){
         analysis <- tidyr::gather(analysis, trait, phenotype,
                                   -c(date, experiment, round, assay, plate,
@@ -313,6 +376,10 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 
 sumplate <- function(plates, quantiles = FALSE, log = FALSE,
                              ends = FALSE, long = FALSE){
+    
+    # If plates is a list of data frames, summarize n.sorted of setup plate,
+    # join it to the score plate, and calculate normalized n
+    
     if (length(plates) == 2) {
         score <- summarize_plates(plates[[1]], quantiles, log, ends, long) %>%
             dplyr::arrange(plate, row, col)
@@ -324,6 +391,9 @@ sumplate <- function(plates, quantiles = FALSE, log = FALSE,
             dplyr::mutate(norm.n = n / control.n.sorted) %>%
             dplyr::select(-n.sorted, -control.n.sorted)
     } else {
+        
+        # Otherwise, just summarize the plate
+        
         data <- summarize_plates(plates, quantiles, log, ends, long) %>%
             dplyr::arrange(plate, row, col)
     }

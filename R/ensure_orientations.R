@@ -1,3 +1,5 @@
+# Ensure that the data is in long format using tidyr
+
 ensure_long <- function(data){
     if("trait" %in% colnames(data)){
         return(data)
@@ -8,6 +10,8 @@ ensure_long <- function(data){
         return(longdata)
     }
 }
+
+# Ensure that the data is in wide format using tidyr
 
 ensure_wide <- function(data){
     if("n" %in% colnames(data)){
