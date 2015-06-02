@@ -15,10 +15,10 @@
 #' @export
 
 bamf_prune <- function(data, drop = FALSE) {
-    browser()
 
     # Make sure that the data being fed into the pruning function is in long
     # format
+    
     data <- ensure_long(data)
     
     napheno <- data[is.na(data$phenotype), ] %>%
@@ -153,7 +153,7 @@ bamf_prune <- function(data, drop = FALSE) {
         # continuity between these three bins or there is no continuity between
         # all of the lower multiple bins up to bin 5 [7x] or there is continuity
         # between all bins with one skip
-    # 3) If the l
+        # 3) If the l
 
     dplyr::ungroup() %>%
 
@@ -161,17 +161,22 @@ bamf_prune <- function(data, drop = FALSE) {
                   cuts1 = categorize2(.),
                   cuts2 = categorize3(.))
 
-    # Select the necessary columns rename the outlier calling columns, and
-    # arrange by condition, row, and columns
+    # Select the necessary columns, rename the outlier calling columns, and
+    # arrange by condition, row, and columns. Generally clean things up and bind
+    # it back to the original data frame to regain lost data.
+    
     output <- datawithoutliers %>%
         dplyr::select(date, experiment, round, assay, condition, plate, row,
                       col, trait, phenotype, cuts, cuts1, cuts2) %>%
         dplyr::rename(bamfoutlier1 = cuts, bamfoutlier2 = cuts1,
                       bamfoutlier3 = cuts2) %>%
         dplyr::left_join(., data) %>%
-        dplyr::arrange(condition, row, col, trait)
+        dplyr::arrange(plate, row, as.numeric(col), trait) %>%
+        dplyr::select(date, experiment, round, assay, condition, control, plate, 
+                      row, col, strain, trait, phenotype, bamfoutlier1,
+                      bamfoutlier2, bamfoutlier3)
     
-    
+    # If the user wants to drop the outliers, filter against all three columns
 
     if (drop) {
         output <- output %>%
@@ -179,8 +184,16 @@ bamf_prune <- function(data, drop = FALSE) {
     }
 
     # Return the output data frame
+    
     return(output)
 }
+
+
+
+
+
+
+
 
 
 
@@ -192,6 +205,17 @@ categorize1 <- function(data) {
             & (s5l == 0 | s4l == 0))
     )
 }
+
+
+
+
+
+
+
+
+
+
+
 
 categorize2 <- function(data) {
     with(data,
@@ -211,6 +235,14 @@ categorize2 <- function(data) {
                 & (fivels == 1 & ( (s6l + s4l + s5l + s3l) / numst) <= .05))))
     )
 }
+
+
+
+
+
+
+
+
 
 categorize3 <- function(data) {
     with(data,
