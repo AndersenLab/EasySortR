@@ -1,36 +1,111 @@
-# Sorter Data Processing Package Problems
+# easysorter
 
-## Reading in data
+easysorter is effectively version 2 of the COPASutils package (Shimko and Andersen, 2014). This package is specialized for use with worms and includes additional functionality on top of that provided by COPASutils, including division of recorded objects by larval stage and the ability to regress out control phenotypes from those recorded in experimental conditions. The package is rather specific to use in the Andersen Lab and, therefore, is not available from CRAN. To install you will need the [`devtools`](https://github.com/hadley/devtools) package. You can install both the `devtools` package and easy sorter using the commands below:
 
-### Identification variables
+```r
+install.packages("devtools")
+devtools::install_github("AndersenLab/easysorter")
+```
 
-We need to define a single set of universal identifying variables and a way to feed them into a function. Currently (RIAILs data) this relies on a specific naming structure for the data files. Currently the file naming and directory structure provide the following information:
+The functionality of the package can be broken down into three main goals:
 
-+ Date
-+ Experiment Type (RIAILs, GWAS, NILs, etc.)
-+ Round (numerical value such as 1 or 2 for RIAILs)
-+ Assay (an alphabetic identifier that serves as a proxy for the date)
-+ Plate Number
-+ Drug/Condition
-+ Concentration (in some cases only)
++ Reading raw data from the sorter alongside information about strains, conditions, controls, and contamination
 
-This information is all included in the final datasets along with the COPAS-provided well row and column values. We need to decide which set of these identifiers are applicable universally and should thusly be included in the data reading functions. As of right now, in order to process the RIAILs data sets, Assay is needed to regress out interday effects, plate number is needed to math sort and score plates to one another, and Drug and Concentration are needed to summarize some replicated plates and to separate different drug concentrations done on the same day.
++ Pruning anomalous data points
 
-### Setup Plates
++ Regressing control phenotypes from experimental phenotypes
 
-Do all scored plates have corresponding setup plates in all experiments? If not, how should we handle getting the number scored into read-in data frames?
+## Directory structure
 
-### Data Structure
+Because so much information must be transferred alongside the plate data, the directory structure from which you are reading is critically important. Below is an example of the a correct directory structure.
 
-Once the data are read in, we need to decide whether to keep the data in wide format or switch it to [long format](http://en.wikipedia.org/wiki/Wide_and_narrow_data). My original code from ExperimentRunner/SimpleDataProcess does all of the regression columnwise with the data in wide format. This is a rough and rather Rube Goldberg-ian method method that is very prone to failure. My vote is to switch regression from wide to long format, which may mean switching "normal" data frames to long format during analyses. Is this ok with everyone?
+```
+20150529_LysateScore/
+├── conditions
+│   └── LysateConc5-20.csv
+├── contamination
+│   ├── p01_contamination.csv
+│   └── p02_contamination.csv
+├── controls
+│   └── None.csv
+├── score
+│   ├── p01_N2CBLysateTest_LysateConc5-20_None.txt
+│   └── p02_N2CBLysateTest_LysateConc5-20_None.txt
+└── strains
+    └── N2CBLysateTest.csv
+```
 
-![My regression code from last year works something like this](http://upload.wikimedia.org/wikipedia/commons/a/a6/Professor_Lucifer_Butts.gif)
+This directory exhibits the minimal file content and naming for the easysorter package to work.
 
-### Plate-by-Plate vs Whole Assay Analysis
+### Experiment directory
 
-Originally (circa Summer 2014) all analysis was done by joining all plates from a single assay/experiment together in one giant data frame, creating a data frame each for all setup data, score data, and control data. These data frames could then be filtered to just the data needed to the plates being analyzed. Is this the way that we want to keep things (plate reading function will take a directory) or would it be preferable to read plates in individually and allow the user to concatenate data frames or loop as necessary? Perhaps a function for each?
+The experiment directory contains all of the files attached to a specific experiment conducted on a specific date. The naming convention for these folders should include the date in the format 4-digit year::2-digit month::2-digit day and experiment name separated by underscores. Optionally, an experiment round and assay can be added as well. The round should be a number and the assay should be a lowercase letter. Because of the ambiguity of the experiment and round/assay, the experiment name should never contain numbers itself.
 
+```
+# Minimal directory name
+# Date is January 1st, 2015
+# Experiment name is "ExperimentName"
 
+20150101_ExperimentName/
 
+#####################################
+
+# Maximum directory name
+# Date is January 1st, 2015
+# Experiment name is "ExperimentName"
+# Round is 1
+# Assay is A
+
+20150101_ExperimentName1a/
+
+#####################################
+
+20150101_ExperimentName1a/ = GOOD
+20150101_Experiment25Name1a/ = BAD
+```
+
+### Template directories
+
+Each experiment directory should have four template directories: `strains`, `conditions`, `controls`, and `contamination`. Within each of these directories should be the template files in `.csv` format.
+
+The blank template file can be downloaded [here](ADD DIRECTORY FOR DOWNLOAD). Each sheet of the file should be filled in and exported to a `.csv` individually. If you are using Excel, use File -> Save As... and select file format `.csv` to export the currently selected sheet only. This will need to be done multiple times to export each sheet. In Numbers, select File -> Export To... -> .CSV. This will export all of the sheets to different files within a folder. Each file will need to be renamed individually after they are exported.
+
+#### Strains template
+
+Enter the strain name for all wells. If the well contained no strain (a wash well, for instance), enter "NA".
+
+#### Conditions template
+
+Enter the condition name for each well. Multiple dosages can be encoded as `bleomycin-250` or `bleomycin 250`. Avoid using just numeric values like `250`.
+
+#### Controls template
+
+Enter the control for each well. If the well does not have an associated control, it should be encoded as `none`. If the well itself is a control well, encode the control value as `NA`.
+
+#### Contamination
+
+Enter the value for contamination in only wells that were contaminated. These should be encoded as `TRUE`. All non-contaminated wells can either be encoded as `FALSE`. Contamination files should be names as the plate number and the word "contamination", separated by an underscore. For example:
+
+```
+20150529_LysateScore/
+├── conditions
+│   └── LysateConc5-20.csv
+├── contamination
+│   ├── p01_contamination.csv
+│   └── p02_contamination.csv
+├── controls
+│   └── None.csv
+├── score
+│   ├── p01_N2CBLysateTest_LysateConc5-20_None.txt
+│   └── p02_N2CBLysateTest_LysateConc5-20_None.txt
+└── strains
+    └── N2CBLysateTest.csv
+```
+
+The contamination files in this directory are named `p01_contamination.csv` and `p02_contamination.csv`. These names correspond to the two numbers used on the two plates that were scored.
+
+### File naming
+
+File names should be formatted with the plate number, name of the strains template file, name of the conditions template file, and name of the controls template file all separated by underscores. All data files must be saved as `.txt` files. In the plate named `p01_N2CBLysateTest_LysateConc5-20_None.txt` `p01` is the plate number, `N2CBLysateTest` refers to the strain template file `N2CBLysateTest.csv`, `LysateConc5-20` refers to the condition template file `LysateConc5-20.csv`, and `None` refers to the control template file `None.csv`.
 
 
