@@ -19,6 +19,10 @@
 #' @param extmax The maximum extinction value allowed. Defaults to 10000.
 #' @param SVM Boolean specifying whether or not to use the support vector
 #' machine to separate worms and bubbles.
+#' @param levels The number of levels above the individual files for the
+#' directory containing information about experiment date, name, round, and
+#' assay. Defaults to 2, which is the standard for Andersen Lab file structure
+#' as of June 2015.
 #' @return If a single file is given, a single data frame for only the provided
 #' plate is returned. If an experiment directory is given, a list of two data
 #' frames will be returned. The first element in the list will be a single data
@@ -28,19 +32,19 @@
 #' of the plates in the directory will be returned.
 #' @export
 
-read_data <- function(filedir, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
-    SVM=TRUE) {
+read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
+                      extmax = 10000, SVM = TRUE, levels = 2) {
     
     # Remove trailing '/' if present in the file path
     
-    if (grep("/$", filedir) == 1){
+    if (grepl("/$", filedir)){
         filedir <- substr(filedir, 1, nchar(filedir) - 1)
     }
     
     # If an individual file is given, read it in
     
     if (length(dir(filedir)) == 0){
-        data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM)
+        data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM, levels)
     } else if ("score" %in% dir(filedir) & "setup" %in% dir(filedir)) {
         
         # If both setup and score directories are subdirectories of the given
@@ -48,8 +52,20 @@ read_data <- function(filedir, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
         
         scorepath <- file.path(filedir, "score")
         setuppath <- file.path(filedir, "setup")
-        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM)
-        setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM)
+        
+        # If the 'no files in directory' error is thrown by read_directory, 
+        # make it a bit more specific when it is thrown from read_data
+        
+        score <- tryCatch(
+            read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
+                           levels),
+            error = function(e) stop(paste("The score subdirectory of the directory you want to read contains no files. Please ensure you have selected the correct directory and try again. If you are only trying to read the setup subdirectory, please provide that directory as the argument to read_data:", setuppath)),
+            finally = "")
+        setup <- tryCatch(
+            read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM,
+                           levels),
+            error = function(e) stop("The setup subdirectory of the directory you want to read contains no files. Please ensure you have selected the correct directory and try again."),
+            finally = "")
         data <- list(score, setup)
     } else if ("score" %in% dir(filedir) & !("setup" %in% dir(filedir))) {
         
@@ -57,36 +73,45 @@ read_data <- function(filedir, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
         # everything from the score directory
         
         scorepath <- file.path(filedir, "score")
-        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM)
+        score <- tryCatch(
+            read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
+                           levels),
+            error = function(e) stop("The score subdirectory of the directory you want to read contains no files. Please ensure you have selected the correct directory and try again."),
+            finally = "")
         data <- score
     } else {
         
         # Otherwise, just read in the given directory
         
-        data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM)
+        data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM, levels)
     }
     return(data)
 }
 
-read_directory <- function(directory, tofmin=60, tofmax=2000, extmin=0,
-                           extmax=10000, SVM=TRUE) {
+read_directory <- function(directory, tofmin = 60, tofmax = 2000, extmin = 0,
+                           extmax = 10000, SVM = TRUE, levels = 2) {
     
     # Get all of the txt files from adirectory and read them in individually.
     # Then rbind them and return a data frame.
     
     dirfiles <- dir(directory)
     files <- subset(dirfiles, grepl(".txt$", dirfiles))
+    
+    # Throw an error if there are no files in the given directory
+    
+    if (length(files) == 0) stop("There are no text files in the given directory.")
+    
     filepaths <- file.path(directory, files)
     plates <- lapply(filepaths, function(x){
         read_file(x, tofmin, tofmax, extmin, extmax,
-                  SVM)
+                  SVM, levels)
     })
     data <- do.call(rbind, plates)
     return(data)
 }
 
-read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
-                      SVM=TRUE, levels=2){
+read_file <- function(file, tofmin = 60, tofmax = 2000, extmin = 0,
+                      extmax = 10000, SVM = TRUE, levels = 2){
     
     # Read the raw sorter files and make the row names
     
@@ -188,6 +213,12 @@ read_file <- function(file, tofmin=60, tofmax=2000, extmin=0, extmax=10000,
 }
 
 read_template <- function(templatefile, type){
+    
+    if (!file.exists(templatefile)) {
+        stop(paste("The", type, "template file at", templatefile, "could not be
+                   found. Please check to ensure that file exists and is in the
+                   right directory structure, then try again."))
+    }
     
     # Read in the teamplate file and melt it with tidyr
     
