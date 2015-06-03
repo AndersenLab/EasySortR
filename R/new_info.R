@@ -36,7 +36,7 @@ new_info <- function(filepath, levels = 1){
     
     filename <- splitfp[[1]][(length(splitfp[[1]]))]
     
-    if (!grepl("p[0-9]{2}_([0-9a-zA-Z\-]*_){2,}[0-9a-zA-Z\-]*\.txt",
+    if (!grepl("p[0-9]{2}_([0-9a-zA-Z-]*_){2,}[0-9a-zA-Z-]*.txt",
                filename)) {
         stop("File name does not conform to the standard 'pXX_straintemplate_conditiontemplate_controltemplate")
     }
