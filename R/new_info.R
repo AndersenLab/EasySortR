@@ -11,7 +11,7 @@ new_info <- function(filepath, levels = 1){
     # Check if the direcory name is provides the correct information
     
     if (!grepl("[0-9]{8}_[A-Za-z]+[0-9]*[a-z]{0,1}", dirname)) {
-        warning("Directory name does not match predefined structure. Information about the date, name, round , and assay of the experiment has been set to NA. This may be an issue with the number of levels up from the individual ")
+        warning("Directory name does not match predefined structure. Information about the date, name, round , and assay of the experiment has been set to NA. This may be an issue with the number of levels up from the individual file.")
         date <- NA
         experiment <- NA
         round <- NA
