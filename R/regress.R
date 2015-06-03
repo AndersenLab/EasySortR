@@ -9,6 +9,8 @@
 
 regress <- function(dataframe, assay=FALSE){
     dataframe <- ensure_long(dataframe)
+    dataframe <- dataframe %>%
+        filter(trait != "n.sorted")
     data <- dataframe %>%
             dplyr::filter(!is.na(control))
     controls <- dataframe %>%
@@ -34,8 +36,17 @@ regress <- function(dataframe, assay=FALSE){
     resids <- modeldata %>%
         dplyr::select(condition, trait, phenotype, controlphenotype, .resid) %>%
         dplyr::rename(resid = .resid)
-    regressedframe <- dplyr::left_join(fusedmoltendata, resids) %>%
-        dplyr::group_by(row, col, trait) %>%
-        dplyr::distinct()
+    arrangedmolten <- arrange(fusedmoltendata, condition, trait, phenotype,
+                              controlphenotype)
+    arrangedresids <- arrange(resids, condition, trait, phenotype,
+                              controlphenotype)
+    
+    
+    if (all.equal(arrangedmolten[,c(5,11,12,16)], arrangedresids[,-5])) {
+        regressedframe <- cbind(arrangedmolten, arrangedresids$resid)
+    } else {
+        stop("The values for the raw data (when arranged on 'condition', 'trait', 'phenotype', and 'controlphenotype' do not match up with same values in the residual data frame output by the broom package's augment function. Quitting to prevent binding of incorrect data")
+    }
+    
     return(regressedframe)
 }
