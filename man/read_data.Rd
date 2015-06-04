@@ -5,7 +5,7 @@
 \title{Read plate data}
 \usage{
 read_data(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
-  extmax = 10000, SVM = TRUE)
+  extmax = 10000, SVM = TRUE, levels = 2)
 }
 \arguments{
 \item{filedir}{The file or directory to be read. This can be an individual
@@ -22,6 +22,11 @@ containing the score and setup directories.}
 
 \item{SVM}{Boolean specifying whether or not to use the support vector
 machine to separate worms and bubbles.}
+
+\item{levels}{The number of levels above the individual files for the
+directory containing information about experiment date, name, round, and
+assay. Defaults to 2, which is the standard for Andersen Lab file structure
+as of June 2015.}
 }
 \value{
 If a single file is given, a single data frame for only the provided
