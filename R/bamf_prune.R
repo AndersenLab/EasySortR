@@ -15,7 +15,7 @@
 #' @export
 
 bamf_prune <- function(data, drop = FALSE) {
-
+    
     # Make sure that the data being fed into the pruning function is in long
     # format
     
@@ -180,7 +180,7 @@ bamf_prune <- function(data, drop = FALSE) {
 
     if (drop) {
         output <- output %>%
-                  filter(!bamfoutlier1, !bamfoutlier2, !bamfoutlier3)
+                  dplyr::filter(!bamfoutlier1 & !bamfoutlier2 & !bamfoutlier3)
     }
 
     # Return the output data frame
