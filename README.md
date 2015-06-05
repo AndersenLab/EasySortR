@@ -108,6 +108,8 @@ The contamination files in this directory are named `p01_contamination.csv` and 
 
 File names should be formatted with the plate number, name of the strains template file, name of the conditions template file, and name of the controls template file all separated by underscores. All data files must be saved as `.txt` files. In the plate named `p01_N2CBLysateTest_LysateConc5-20_None.txt` `p01` is the plate number, `N2CBLysateTest` refers to the strain template file `N2CBLysateTest.csv`, `LysateConc5-20` refers to the condition template file `LysateConc5-20.csv`, and `None` refers to the control template file `None.csv`.
 
+![File name convention](./READMEfiles/FileNaming.png)
+
 ## Pipeline
 
 The complete easy sorter package consists of only five functions: `read_data`, `sumplate`, `bamf_prune`, and `regress`.
