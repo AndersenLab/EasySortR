@@ -34,7 +34,7 @@
 
 read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
                       extmax = 10000, SVM = TRUE, levels = 2) {
-    
+
     # Remove trailing '/' if present in the file path
     
     if (grepl("/$", filedir)){
@@ -56,16 +56,10 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
         # If the 'no files in directory' error is thrown by read_directory, 
         # make it a bit more specific when it is thrown from read_data
         
-        score <- tryCatch(
-            read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
-                           levels),
-            error = function(e) stop(paste("The score subdirectory of the directory you want to read contains no files. Please ensure you have selected the correct directory and try again. If you are only trying to read the setup subdirectory, please provide that directory as the argument to read_data:", setuppath)),
-            finally = "")
-        setup <- tryCatch(
-            read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM,
-                           levels),
-            error = function(e) stop("The setup subdirectory of the directory you want to read contains no files. Please ensure you have selected the correct directory and try again."),
-            finally = "")
+        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
+                                levels)
+        setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM,
+                                levels)
         data <- list(score, setup)
     } else if ("score" %in% dir(filedir) & !("setup" %in% dir(filedir))) {
         
@@ -73,17 +67,15 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
         # everything from the score directory
         
         scorepath <- file.path(filedir, "score")
-        score <- tryCatch(
-            read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
-                           levels),
-            error = function(e) stop("The score subdirectory of the directory you want to read contains no files. Please ensure you have selected the correct directory and try again."),
-            finally = "")
+        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
+                                levels)
         data <- score
     } else {
         
         # Otherwise, just read in the given directory
         
-        data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM, levels)
+        data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM,
+                               levels)
     }
     return(data)
 }
