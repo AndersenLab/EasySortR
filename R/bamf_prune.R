@@ -188,14 +188,9 @@ bamf_prune <- function(data, drop = FALSE) {
     return(output)
 }
 
-
-
-
-
-
-
-
-
+# If the observation is in the sixth bin (>10x IQR outside the distribution)
+# and the three outermost bins are discontinuous and make up less than 5% of the
+# distribution, mark the observation as an outlier.
 
 categorize1 <- function(data) {
     with(data,
@@ -206,59 +201,44 @@ categorize1 <- function(data) {
     )
 }
 
-
-
-
-
-
-
-
-
-
-
+# If the 5 innermost bins are discontinuous by more than a 1 bin gap, the
+# observation is in the fifth bin (between 7 and 10x IQR outside the
+# distribution), and the four outermost bins make up less than 5% of the
+# population, mark the observation an outlier
 
 categorize2 <- function(data) {
     with(data,
-         ( ( ! ( ( (s6h + s5h + s4h) / numst) >= .05 & s6h >= 1 & s5h >= 1
-             & s4h >= 1))
-          & ( (! ( (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-                | (s5h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-                | (s5h >= 1 & s4h >= 1 & s2h >= 1 & s1h >= 1)
-                | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s1h >= 1)
-                | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1)))
-             & (fivehs == 1 & ( (s6h + s4h + s5h + s3h) / numst) <= .05)
-             | ( (! ( (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-                   | (s5h >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-                   | (s5h >= 1 & s4l >= 1 & s2l >= 1 & s1l >= 1)
-                   | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s1l >= 1)
-                   | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1)))
-                & (fivels == 1 & ( (s6l + s4l + s5l + s3l) / numst) <= .05))))
+         ( ( ! ( (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
+                    | (s5h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
+                    | (s5h >= 1 & s4h >= 1 & s2h >= 1 & s1h >= 1)
+                    | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s1h >= 1)
+                    | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1)))
+               & (fivehs == 1 & ( (s6h + s5h + s4h + s3h) / numst) <= .05))
+               | ( ( ! ( (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                        | (s5h >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                        | (s5h >= 1 & s4l >= 1 & s2l >= 1 & s1l >= 1)
+                        | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s1l >= 1)
+                        | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1)))
+                   & (fivels == 1 & ( (s6l + s5l + s4l + s3l) / numst) <= .05))
     )
 }
 
-
-
-
-
-
-
-
+# If the 4 innermost bins are discontinuous by more than a 1 bin gap, the
+# observation is in the fourth bin (between 5 and 7x IQR outside the
+# distribution), and the four outermost bins make up less than 5% of the
+# population, mark the observation an outlier
 
 categorize3 <- function(data) {
     with(data,
-         ( ( ! ( ( (s6h + s5h + s4h) / numst) >= .05
-             & s6h >= 1 & s5h >= 1 & s4h >= 1))
-          & ( ( ! ( (s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-                | (s4h >= 1 & s2h >= 1 & s1h >= 1)
-                | (s4h >= 1 & s3h >= 1 & s1h >= 1)
-                | (s4h >= 1 & s3h >= 1 & s2h >= 1)))
-             & (fourhs == 1 & fivehs == 0
-                & (s5h + s4h + s3h + s2h) / numst <= .05))
-          | ( ( ! ( (s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-                | (s4l >= 1 & s2l >= 1 & s1l >= 1)
-                | (s4l >= 1 & s3l >= 1 & s1l >= 1)
-                | (s4l >= 1 & s3l >= 1 & s2l >= 1)))
-             & (fourls == 1  & fivels == 0
-                & (s5l + s4l + s3l + s2l) / numst <= .05)))
+         ( ( ! ( (s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
+                     | (s4h >= 1 & s2h >= 1 & s1h >= 1)
+                     | (s4h >= 1 & s3h >= 1 & s1h >= 1)
+                     | (s4h >= 1 & s3h >= 1 & s2h >= 1)))
+               & (fourhs == 1 & (s5h + s4h + s3h + s2h) / numst <= .05))
+           | ( ( ! ( (s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                     | (s4l >= 1 & s2l >= 1 & s1l >= 1)
+                     | (s4l >= 1 & s3l >= 1 & s1l >= 1)
+                     | (s4l >= 1 & s3l >= 1 & s2l >= 1)))
+               & (fourls == 1 & (s5l + s4l + s3l + s2l) / numst <= .05))
     )
 }
