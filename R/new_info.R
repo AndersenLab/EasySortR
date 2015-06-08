@@ -38,7 +38,7 @@ new_info <- function(filepath, levels = 1){
     
     if (!grepl("p[0-9]{2}_([0-9a-zA-Z-]*_){2,}[0-9a-zA-Z-]*.txt",
                filename)) {
-        stop("File name does not conform to the standard 'pXX_straintemplate_conditiontemplate_controltemplate")
+        stop("File name does not conform to the standard 'pXX_straintemplate_conditiontemplate_controltemplate.txt'")
     }
     
     # Split the file name and get the plate number
