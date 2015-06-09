@@ -35,6 +35,10 @@
 read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
                       extmax = 10000, SVM = TRUE, levels = 2) {
 
+    saf <- getOption("stringsAsFactors")
+    options(stringsAsFactors = TRUE)
+    
+    
     # Remove trailing '/' if present in the file path
     
     if (grepl("/$", filedir)){
@@ -77,6 +81,9 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
         data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM,
                                levels)
     }
+    
+    options(stringsAsFactors = saf)
+    
     return(data)
 }
 
@@ -227,6 +234,8 @@ read_template <- function(templatefile, type){
         colnames(melttemplate) <- c("row", "col", "control")
     } else if (type == "contam") {
         colnames(melttemplate) <- c("row", "col", "contamination")
+        melttemplate$contamination[is.na(melttemplate$contamination)] <- FALSE
     }
+    
     return(melttemplate)
 }
