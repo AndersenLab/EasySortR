@@ -385,7 +385,7 @@ sumplate <- function(plates, quantiles = FALSE, log = FALSE,
             dplyr::arrange(plate, row, col)
         setup <- plates[[2]] %>%
             dplyr::group_by(date, experiment, round, assay,
-                            plate, drug, row, col) %>% dplyr::summarize(
+                            plate, condition, row, col) %>% dplyr::summarize(
                                 control.n.sorted = sum(sort == 6))
         data <- dplyr::left_join(score, setup) %>%
             dplyr::mutate(norm.n = n / control.n.sorted) %>%
