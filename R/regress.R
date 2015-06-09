@@ -72,7 +72,10 @@ regress <- function(dataframe, assay=FALSE){
     # the same and that the values for the matching columns are all the same
     
     tryCatch({
-        if (all.equal(arrangedmolten[,c(5,11,12,16)], arrangedresids[,-5])) {
+        if (all.equal(arrangedmolten[,c("condition", "trait", "phenotype",
+                                        "controlphenotype")],
+                      arrangedresids[,c("condition", "trait", "phenotype",
+                                        "controlphenotype")])) {
             regressedframe <- cbind(arrangedmolten, arrangedresids$resid) %>%
                 dplyr::rename(resid = `arrangedresids$resid`)
         } else {
