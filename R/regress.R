@@ -37,7 +37,8 @@ regress <- function(dataframe, assay=FALSE){
     # Join the control values back to the controls
     
     fusedmoltendata <- dplyr::left_join(moltendata, moltencontrols,
-                                 by=c("strain", "control", "trait"))
+                                 by=c("strain", "control", "trait")) %>%
+        dplyr::filter(!is.na(phenotype), !is.na(controlphenotype))
     
     # Perform the regression step with or without the assay values and pull out
     # the residuals with the broom package
@@ -45,13 +46,11 @@ regress <- function(dataframe, assay=FALSE){
     if(assay){
         modeldata <- fusedmoltendata %>%
             dplyr::group_by(condition, trait) %>%
-            dplyr::filter(!is.na(phenotype), !is.na(controlphenotype)) %>%
             dplyr::do(broom::augment(lm(phenotype ~ controlphenotype + assay,
                         data=.)))
     } else {
         modeldata <- fusedmoltendata %>%
             dplyr::group_by(condition, trait) %>%
-            dplyr::filter(!is.na(phenotype), !is.na(controlphenotype)) %>%
             dplyr::do(broom::augment(lm(phenotype ~ controlphenotype, data=.)))
     }
     
