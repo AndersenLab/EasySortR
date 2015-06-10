@@ -35,6 +35,14 @@
 read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
                       extmax = 10000, SVM = TRUE, levels = 2) {
 
+    # NOTE: 'The next two lines were added to get known issue with
+    # dplyr::left_join treating character NAs incorrectly. This is currently
+    # (6/9/2015) issue number 965 for the dplyr package. It should be corrected
+    # in dplyr version 0.5. At that time, remove the two lines below as well as
+    # the reseting of the option at the end of the function and test the
+    # function to ensure that the strain names are still present after the point
+    # of the final in bamf_prune.
+    
     saf <- getOption("stringsAsFactors")
     options(stringsAsFactors = TRUE)
     
@@ -81,6 +89,8 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
         data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM,
                                levels)
     }
+    
+    # NOTE: Remove the following line after dplyr updates to > v0.5. 
     
     options(stringsAsFactors = saf)
     

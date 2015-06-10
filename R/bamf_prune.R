@@ -144,16 +144,7 @@ bamf_prune <- function(data, drop = FALSE) {
                       !is.na(numst)) %>%
 
         # Add three columns stating whether the observation is an outlier
-        # based on:
-        # 1) If the outlier is extreme (more extreme than +/- 10*IQR) and
-        # the three outermost bins (4 [5x], 5 [7x], and 6 [10x]) make up less
-        # than 5% of the observations
-        # 2) If outliers in the three outermost bins (4 [5x], 5 [7x], and 6
-        # [10x]) make up less than 5% of the population and there is no
-        # continuity between these three bins or there is no continuity between
-        # all of the lower multiple bins up to bin 5 [7x] or there is continuity
-        # between all bins with one skip
-        # 3) If the l
+        # based the three outlier detection functions below
 
     dplyr::ungroup() %>%
 
