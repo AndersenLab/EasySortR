@@ -47,40 +47,68 @@ regress <- function(dataframe, assay=FALSE){
             dplyr::group_by(condition, trait) %>%
             dplyr::do(broom::augment(lm(phenotype ~ assay - 1,
                         data=.)))
+        
+        # Select only the information that we're interested in and rename .resid to
+        # just resid
+        
+        resids <- modeldata %>%
+            dplyr::select(condition, trait, phenotype, .resid) %>%
+            dplyr::rename(resid = .resid)
+        
+        # Arrange the columns so that they align for a cbind
+        
+        arrangedmolten <- dplyr::arrange(fusedmoltendata, condition, trait, phenotype)
+        arrangedresids <- dplyr::arrange(resids, condition, trait, phenotype)
+        
+        # Make sure that the number of rows between the two arranged data frames are
+        # the same and that the values for the matching columns are all the same
+        
+        tryCatch({
+            if (all.equal(arrangedmolten[,c("condition", "trait", "phenotype")],
+                          arrangedresids[,c("condition", "trait", "phenotype")])) {
+                regressedframe <- cbind(arrangedmolten, arrangedresids$resid) %>%
+                    dplyr::rename(resid = `arrangedresids$resid`)
+            } else {
+                stop("The values for the raw data (when arranged on 'condition', 'trait', 'phenotype', and 'controlphenotype' do not match up with same values in the residual data frame output by the broom package's augment function. Quitting to prevent binding of incorrect data")
+            }
+        }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
+        
     } else {
         modeldata <- fusedmoltendata %>%
             dplyr::group_by(condition, trait) %>%
             dplyr::do(broom::augment(lm(phenotype ~ controlphenotype, data=.)))
+        
+        # Select only the information that we're interested in and rename .resid to
+        # just resid
+        
+        resids <- modeldata %>%
+            dplyr::select(condition, trait, phenotype, controlphenotype, .resid) %>%
+            dplyr::rename(resid = .resid)
+        
+        # Arrange the columns so that they align for a cbind
+        
+        arrangedmolten <- dplyr::arrange(fusedmoltendata, condition, trait, phenotype,
+                                         controlphenotype)
+        arrangedresids <- dplyr::arrange(resids, condition, trait, phenotype,
+                                         controlphenotype)
+        
+        # Make sure that the number of rows between the two arranged data frames are
+        # the same and that the values for the matching columns are all the same
+        
+        tryCatch({
+            if (all.equal(arrangedmolten[,c("condition", "trait", "phenotype",
+                                            "controlphenotype")],
+                          arrangedresids[,c("condition", "trait", "phenotype",
+                                            "controlphenotype")])) {
+                regressedframe <- cbind(arrangedmolten, arrangedresids$resid) %>%
+                    dplyr::rename(resid = `arrangedresids$resid`)
+            } else {
+                stop("The values for the raw data (when arranged on 'condition', 'trait', 'phenotype', and 'controlphenotype' do not match up with same values in the residual data frame output by the broom package's augment function. Quitting to prevent binding of incorrect data")
+            }
+        }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
     }
     
-    # Select only the information that we're interested in and rename .resid to
-    # just resid
-    
-    resids <- modeldata %>%
-        dplyr::select(condition, trait, phenotype, controlphenotype, .resid) %>%
-        dplyr::rename(resid = .resid)
-    
-    # Arrange the columns so that they align for a cbind
-    
-    arrangedmolten <- dplyr::arrange(fusedmoltendata, condition, trait, phenotype,
-                              controlphenotype)
-    arrangedresids <- dplyr::arrange(resids, condition, trait, phenotype,
-                              controlphenotype)
-    
-    # Make sure that the number of rows between the two arranged data frames are
-    # the same and that the values for the matching columns are all the same
-    
-    tryCatch({
-        if (all.equal(arrangedmolten[,c("condition", "trait", "phenotype",
-                                        "controlphenotype")],
-                      arrangedresids[,c("condition", "trait", "phenotype",
-                                        "controlphenotype")])) {
-            regressedframe <- cbind(arrangedmolten, arrangedresids$resid) %>%
-                dplyr::rename(resid = `arrangedresids$resid`)
-        } else {
-            stop("The values for the raw data (when arranged on 'condition', 'trait', 'phenotype', and 'controlphenotype' do not match up with same values in the residual data frame output by the broom package's augment function. Quitting to prevent binding of incorrect data")
-        }
-    }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
+
     
     return(regressedframe)
 }
