@@ -8,7 +8,6 @@
 #' @export
 
 regress <- function(dataframe, assay=FALSE){
-    
     # Ensure the data frame is in long format, then filter out all NA strains
     # and nonfinite (NA, NaN, Inf) values
     
@@ -46,7 +45,7 @@ regress <- function(dataframe, assay=FALSE){
     if(assay){
         modeldata <- fusedmoltendata %>%
             dplyr::group_by(condition, trait) %>%
-            dplyr::do(broom::augment(lm(phenotype ~ controlphenotype + assay,
+            dplyr::do(broom::augment(lm(phenotype ~ assay,
                         data=.)))
     } else {
         modeldata <- fusedmoltendata %>%
