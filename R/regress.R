@@ -45,7 +45,7 @@ regress <- function(dataframe, assay=FALSE){
     if(assay){
         modeldata <- fusedmoltendata %>%
             dplyr::group_by(condition, trait) %>%
-            dplyr::do(broom::augment(lm(phenotype ~ assay,
+            dplyr::do(broom::augment(lm(phenotype ~ assay - 1,
                         data=.)))
     } else {
         modeldata <- fusedmoltendata %>%
