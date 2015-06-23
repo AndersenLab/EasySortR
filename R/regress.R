@@ -18,32 +18,12 @@ regress <- function(dataframe, assay=FALSE){
     
     dataframe <- dataframe %>%
         dplyr::filter(trait != "n.sorted")
-    data <- dataframe %>%
-        
-    # Separate the data from the controls into two different data frames
-        
-            dplyr::filter(!is.na(control))
-    controls <- dataframe %>%
-                dplyr::filter(is.na(control))
-    controls$control <- controls$condition
-    moltendata <- data
-    
-    # Summarize the controls in case there are replicate controls
-    
-    moltencontrols <- controls %>% dplyr::group_by(strain, control, trait) %>%
-        dplyr::summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
-    
-    # Join the control values back to the controls
-    
-    fusedmoltendata <- dplyr::left_join(moltendata, moltencontrols,
-                                 by=c("strain", "control", "trait")) %>%
-        dplyr::filter(!is.na(phenotype), !is.na(controlphenotype))
     
     # Perform the regression step with or without the assay values and pull out
     # the residuals with the broom package
     
     if(assay){
-        modeldata <- fusedmoltendata %>%
+        modeldata <- dataframe %>%
             dplyr::group_by(condition, trait) %>%
             dplyr::do(broom::augment(lm(phenotype ~ assay - 1,
                         data=.)))
@@ -57,7 +37,7 @@ regress <- function(dataframe, assay=FALSE){
         
         # Arrange the columns so that they align for a cbind
         
-        arrangedmolten <- dplyr::arrange(fusedmoltendata, condition, trait, phenotype)
+        arrangedmolten <- dplyr::arrange(dataframe, condition, trait, phenotype)
         arrangedresids <- dplyr::arrange(resids, condition, trait, phenotype)
         
         # Make sure that the number of rows between the two arranged data frames are
@@ -73,7 +53,31 @@ regress <- function(dataframe, assay=FALSE){
             }
         }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
         
+        regressedframe <- regressedframe %>%
+            mutate(phenotype = resid) %>%
+            select(-resid)
+        
     } else {
+        # Separate the data from the controls into two different data frames
+        
+        data <- dataframe %>%
+            dplyr::filter(!is.na(control))
+        controls <- dataframe %>%
+            dplyr::filter(is.na(control))
+        controls$control <- controls$condition
+        moltendata <- data
+        
+        # Summarize the controls in case there are replicate controls
+        
+        moltencontrols <- controls %>% dplyr::group_by(strain, control, trait) %>%
+            dplyr::summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
+        
+        # Join the control values back to the controls
+        
+        fusedmoltendata <- dplyr::left_join(moltendata, moltencontrols,
+                                            by=c("strain", "control", "trait")) %>%
+            dplyr::filter(!is.na(phenotype), !is.na(controlphenotype))
+        
         modeldata <- fusedmoltendata %>%
             dplyr::group_by(condition, trait) %>%
             dplyr::do(broom::augment(lm(phenotype ~ controlphenotype, data=.)))
@@ -106,6 +110,11 @@ regress <- function(dataframe, assay=FALSE){
                 stop("The values for the raw data (when arranged on 'condition', 'trait', 'phenotype', and 'controlphenotype' do not match up with same values in the residual data frame output by the broom package's augment function. Quitting to prevent binding of incorrect data")
             }
         }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
+        
+        regressedframe <- regressedframe %>%
+            mutate(phenotype = resid) %>%
+            select(-resid, -controlphenotype)
+        
     }
     
 
