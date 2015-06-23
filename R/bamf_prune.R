@@ -21,26 +21,26 @@ bamf_prune <- function(data, drop = FALSE) {
     
     data <- ensure_long(data)
     
-    napheno <- data[is.na(data$phenotype), ] %>%
+    napheno <- data[is.na(data[, "phenotype"]), ] %>%
         dplyr::mutate(bamfoutlier1 = NA, bamfoutlier2 = NA, bamfoutlier3 = NA)
-
-    datawithoutliers <- data %>%
-
+    
+    datacuts <- data %>%
+        
         # Filter out all of the wash and/or empty wells
-
+        
         dplyr::filter(!is.na(strain)) %>%
-
+        
         # Group on condition and trait, the, calculate the first and third
         # quartiles for each of the traits
-
+        
         dplyr::group_by(condition, trait) %>%
         dplyr::summarise(iqr = IQR(phenotype, na.rm = TRUE),
                          q1 = quantile(phenotype, probs = .25, na.rm = TRUE),
                          q3 = quantile(phenotype, probs = .75,
                                        na.rm = TRUE)) %>%
-
+        
         # Add a column for the boundaries of each of the bins
-
+        
         dplyr::mutate(cut1h = q3 + (iqr * 2),
                       cut1l =q1 - (iqr * 2),
                       cut2h = q3 + (iqr * 3),
@@ -53,39 +53,41 @@ bamf_prune <- function(data, drop = FALSE) {
                       cut5h = q3 + (iqr * 7),
                       cut6l = q1 - (iqr * 10),
                       cut6h = q3 + (iqr * 10)) %>%
-
+        
         # Join the bin boundaries back to the original data frame
-
-        dplyr::left_join(data, ., by=c("condition", "trait")) %>%
-
-        # Add columns tallying the total number of points in each of the bins
-
-        dplyr::mutate(onehs = ifelse( cut2h > phenotype & phenotype >= cut1h,
-                                      1, 0),
-                      onels = ifelse( cut2l < phenotype & phenotype <= cut1l,
-                        1, 0),
-                      twohs = ifelse( cut3h > phenotype & phenotype >= cut2h,
-                        1, 0),
-                      twols = ifelse( cut3l < phenotype & phenotype <= cut2l,
-                        1, 0),
-                      threehs = ifelse(cut4h > phenotype & phenotype >= cut3h,
-                        1, 0),
-                      threels = ifelse(cut4l < phenotype & phenotype <= cut3l,
-                        1, 0),
-                      fourhs = ifelse(cut5h > phenotype &  phenotype >= cut4h,
-                        1, 0),
-                      fourls = ifelse(cut5l < phenotype &  phenotype <= cut4l,
-                        1, 0),
-                      fivehs = ifelse(cut6h > phenotype & phenotype >= cut5h,
-                        1, 0),
-                      fivels = ifelse(cut6l < phenotype & phenotype <= cut5l,
-                        1, 0),
-                      sixhs = ifelse(phenotype >= cut6h, 1, 0),
-                      sixls = ifelse(phenotype <= cut6l, 1, 0)) %>%
-
-        # Group on condition and trait, then sum the total number of data points
-        # in each of the IQR multiple bins
-
+        
+        dplyr::left_join(data, ., by=c("condition", "trait"))
+    
+    # Add columns tallying the total number of points in each of the bins
+    
+    datawithoutliers <- datacuts %>%
+        dplyr::mutate(onehs = as.numeric(cut2h > phenotype &
+                                             phenotype >= cut1h)) %>%
+        dplyr::mutate(onels = as.numeric(cut2l < phenotype &
+                                             phenotype <= cut1l)) %>%
+        dplyr::mutate(twohs = as.numeric(cut3h > phenotype &
+                                             phenotype >= cut2h)) %>%
+        dplyr::mutate(twols = as.numeric(cut3l < phenotype &
+                                             phenotype <= cut2l)) %>%
+        dplyr::mutate(threehs = as.numeric(cut4h > phenotype &
+                                               phenotype >= cut3h)) %>%
+        dplyr::mutate(threels = as.numeric(cut4l < phenotype &
+                                               phenotype <= cut3l)) %>%
+        dplyr::mutate(fourhs = as.numeric(cut5h > phenotype &
+                                              phenotype >= cut4h)) %>%
+        dplyr::mutate(fourls = as.numeric(cut5l < phenotype &
+                                              phenotype <= cut4l)) %>%
+        dplyr::mutate(fivehs = as.numeric(cut6h > phenotype &
+                                              phenotype >= cut5h)) %>%
+        dplyr::mutate(fivels = as.numeric(cut6l < phenotype &
+                                              phenotype <= cut5l)) %>%
+        dplyr::mutate(sixhs = as.numeric(phenotype >= cut6h)) %>%
+        dplyr::mutate(sixls = as.numeric(phenotype <= cut6l))
+    
+    # Group on condition and trait, then sum the total number of data points
+    # in each of the IQR multiple bins
+    
+    datawithoutliers <- datawithoutliers %>%
         dplyr::group_by(condition, trait) %>%
         dplyr::mutate(s1h = sum(onehs, na.rm = TRUE),
                       s2h = sum(twohs, na.rm = TRUE),
@@ -99,10 +101,10 @@ bamf_prune <- function(data, drop = FALSE) {
                       s5l = sum(fivels, na.rm = TRUE),
                       s6h = sum(sixhs, na.rm = TRUE),
                       s6l = sum(sixls, na.rm = TRUE))%>%
-
+        
         # Group on condition and trait, then check to see if the number of
         # points in each bin is more than 5% of the total number of data points
-
+        
         dplyr::group_by(condition, trait) %>%
         dplyr::mutate(p1h = ifelse(sum(onehs, na.rm = TRUE) / n() >= .05,1,0),
                       p2h = ifelse(sum(twohs, na.rm = TRUE) / n() >= .05,1,0),
@@ -117,14 +119,14 @@ bamf_prune <- function(data, drop = FALSE) {
                       p5l = ifelse(sum(fivels, na.rm = TRUE) / n() >= .05,1,0),
                       p6l = ifelse(sum(sixls,
                                        na.rm = TRUE) / n() >= .05,1,0)) %>%
-
+        
         # Count the number of observations in each condition/trait combination
-
+        
         dplyr::mutate(numst = n()) %>%
-
+        
         # Group on condition and trait, then filter out NAs in any of the added
         # columns
-
+        
         dplyr::group_by(condition, trait) %>%
         dplyr::filter(!is.na(trait), !is.na(phenotype), !is.na(iqr), !is.na(q1),
                       !is.na(q3), !is.na(cut1h), !is.na(cut1l), !is.na(cut2h),
@@ -142,16 +144,16 @@ bamf_prune <- function(data, drop = FALSE) {
                       !is.na(p5h), !is.na(p6h), !is.na(p1l), !is.na(p2l),
                       !is.na(p3l), !is.na(p4l), !is.na(p5l), !is.na(p6l),
                       !is.na(numst)) %>%
-
+        
         # Add three columns stating whether the observation is an outlier
         # based the three outlier detection functions below
-
-    dplyr::ungroup() %>%
-
-    dplyr::mutate(cuts = categorize1(.),
-                  cuts1 = categorize2(.),
-                  cuts2 = categorize3(.))
-
+        
+        dplyr::ungroup() %>%
+        
+        dplyr::mutate(cuts = categorize1(.),
+                      cuts1 = categorize2(.),
+                      cuts2 = categorize3(.))
+    
     # Select the necessary columns, rename the outlier calling columns, and
     # arrange by condition, row, and columns. Generally clean things up and bind
     # it back to the original data frame to regain lost data.
@@ -163,17 +165,17 @@ bamf_prune <- function(data, drop = FALSE) {
                       bamfoutlier3 = cuts2) %>%
         dplyr::left_join(., data) %>%
         dplyr::arrange(plate, row, as.numeric(col), trait) %>%
-        dplyr::select(date, experiment, round, assay, condition, control, plate, 
+        dplyr::select(date, experiment, round, assay, condition, control, plate,
                       row, col, strain, trait, phenotype, bamfoutlier1,
                       bamfoutlier2, bamfoutlier3)
     
     # If the user wants to drop the outliers, filter against all three columns
-
+    
     if (drop) {
         output <- output %>%
-                  dplyr::filter(!bamfoutlier1 & !bamfoutlier2 & !bamfoutlier3)
+            dplyr::filter(!bamfoutlier1 & !bamfoutlier2 & !bamfoutlier3)
     }
-
+    
     # Return the output data frame
     
     return(output)
@@ -200,17 +202,17 @@ categorize1 <- function(data) {
 categorize2 <- function(data) {
     with(data,
          ( ( ! ( (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-                    | (s5h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-                    | (s5h >= 1 & s4h >= 1 & s2h >= 1 & s1h >= 1)
-                    | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s1h >= 1)
-                    | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1)))
-               & (fivehs == 1 & ( (s6h + s5h + s4h + s3h) / numst) <= .05))
-               | ( ( ! ( (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-                        | (s5h >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-                        | (s5h >= 1 & s4l >= 1 & s2l >= 1 & s1l >= 1)
-                        | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s1l >= 1)
-                        | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1)))
-                   & (fivels == 1 & ( (s6l + s5l + s4l + s3l) / numst) <= .05))
+                 | (s5h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
+                 | (s5h >= 1 & s4h >= 1 & s2h >= 1 & s1h >= 1)
+                 | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s1h >= 1)
+                 | (s5h >= 1 & s4h >= 1 & s3h >= 1 & s2h >= 1)))
+           & (fivehs == 1 & ( (s6h + s5h + s4h + s3h) / numst) <= .05))
+         | ( ( ! ( (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s4l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s1l >= 1)
+                   | (s5h >= 1 & s4l >= 1 & s3l >= 1 & s2l >= 1)))
+             & (fivels == 1 & ( (s6l + s5l + s4l + s3l) / numst) <= .05))
     )
 }
 
@@ -222,14 +224,14 @@ categorize2 <- function(data) {
 categorize3 <- function(data) {
     with(data,
          ( ( ! ( (s4h >= 1 & s3h >= 1 & s2h >= 1 & s1h >= 1)
-                     | (s4h >= 1 & s2h >= 1 & s1h >= 1)
-                     | (s4h >= 1 & s3h >= 1 & s1h >= 1)
-                     | (s4h >= 1 & s3h >= 1 & s2h >= 1)))
-               & (fourhs == 1 & (s5h + s4h + s3h + s2h) / numst <= .05))
-           | ( ( ! ( (s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
-                     | (s4l >= 1 & s2l >= 1 & s1l >= 1)
-                     | (s4l >= 1 & s3l >= 1 & s1l >= 1)
-                     | (s4l >= 1 & s3l >= 1 & s2l >= 1)))
-               & (fourls == 1 & (s5l + s4l + s3l + s2l) / numst <= .05))
+                 | (s4h >= 1 & s2h >= 1 & s1h >= 1)
+                 | (s4h >= 1 & s3h >= 1 & s1h >= 1)
+                 | (s4h >= 1 & s3h >= 1 & s2h >= 1)))
+           & (fourhs == 1 & (s5h + s4h + s3h + s2h) / numst <= .05))
+         | ( ( ! ( (s4l >= 1 & s3l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s4l >= 1 & s2l >= 1 & s1l >= 1)
+                   | (s4l >= 1 & s3l >= 1 & s1l >= 1)
+                   | (s4l >= 1 & s3l >= 1 & s2l >= 1)))
+             & (fourls == 1 & (s5l + s4l + s3l + s2l) / numst <= .05))
     )
 }
