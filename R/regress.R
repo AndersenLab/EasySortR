@@ -72,6 +72,9 @@ regress <- function(dataframe, assay=FALSE){
         moltencontrols <- controls %>% dplyr::group_by(strain, control, trait) %>%
             dplyr::summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
         
+        moltendata$control <- as.logical(moltendata$control)
+        moltencontrols$control <- as.logical(moltencontrols$control)
+        
         # Join the control values back to the controls
         
         fusedmoltendata <- dplyr::left_join(moltendata, moltencontrols,
