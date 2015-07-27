@@ -363,7 +363,12 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #'
 #' @param plates A single data frame of all data or a list consisting of all of
 #' the score plates in the first element and the setup plates in the second
-#' elements.
+#' elements. Alternatively, a list of data frames can be supplied (the output
+#' from \code{read_data} if multiple directories are supplied) if the
+#' \code{directories} flag is set to \code{TRUE}.
+#' @param directories Set to \code{TRUE} if the supplied data comes from
+#' mutliple directories (e.g. the RIAILs1 or RIAILs2 data). Defaults to
+#' \code{FALSE}.
 #' @param quantiles Boolean indicating whether or not quantile values (q10, q25,
 #' q75, q90) should be included in the summarized data frame. Defaults to FALSE.
 #' @param log Boolean indicating whether or not log-transformed values should be
@@ -374,28 +379,68 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #' @importFrom dplyr %>%
 #' @export
 
-sumplate <- function(plates, quantiles = FALSE, log = FALSE,
-                             ends = FALSE, long = FALSE){
+sumplate <- function(plates, directories = FALSE, quantiles = FALSE,
+                     log = FALSE, ends = FALSE, long = FALSE) {
     
-    # If plates is a list of data frames, summarize n.sorted of setup plate,
-    # join it to the score plate, and calculate normalized n
+    # If directories iss not set to true and the list looks like it came from
+    # multiple directories, alert the user.
     
-    if (length(plates) == 2) {
-        score <- summarize_plates(plates[[1]], quantiles, log, ends, long) %>%
-            dplyr::arrange(plate, row, col)
-        setup <- plates[[2]] %>%
-            dplyr::group_by(date, experiment, round, assay,
-                            plate, condition, row, col) %>% dplyr::summarize(
-                                control.n.sorted = sum(sort == 6))
-        data <- dplyr::left_join(score, setup) %>%
-            dplyr::mutate(norm.n = n / control.n.sorted) %>%
-            dplyr::select(-n.sorted, -control.n.sorted)
-    } else {
-        
-        # Otherwise, just summarize the plate
-        
-        data <- summarize_plates(plates, quantiles, log, ends, long) %>%
-            dplyr::arrange(plate, row, col)
+    if (length(plates) > 2 & !directories) {
+        stop("It appears that you may be processing a data set made up of
+             multiple directories, but you have not set the `directories` flag
+             to `TRUE`. Please try again with `directories = TRUE`.")
     }
-    return(data)
+    
+    if (directories) {
+        data <- lapply(plates, function(x) {
+            sumplate(x, quantiles = quantiles, log = log, ends = ends,
+                     long = long)
+        })
+        data <- dplyr::rbind_all(data)
+        return(data)
+    } else {
+        # If plates is a list of data frames, summarize n.sorted of setup plate,
+        # join it to the score plate, and calculate normalized n
+        
+        if (length(plates) == 2) {
+            score <- summarize_plates(plates[[1]],
+                                      quantiles, log, ends, long) %>%
+                dplyr::arrange(plate, row, col)
+            setup <- plates[[2]] %>%
+                dplyr::group_by(date, experiment, round, assay,
+                                plate, condition, row, col) %>%
+                dplyr::summarize(control.n.sorted = sum(sort == 6))
+            data <- dplyr::left_join(score, setup,
+                                     by = c("date", "experiment", "round",
+                                            "assay", "plate", "condition",
+                                            "row", "col")) %>%
+                dplyr::mutate(norm.n = n / control.n.sorted) %>%
+                dplyr::select(-n.sorted, -control.n.sorted)
+        } else {
+            
+            # Otherwise, just summarize the plate
+            
+            data <- summarize_plates(plates, quantiles, log, ends, long) %>%
+                dplyr::arrange(plate, row, col)
+        }
+        return(data)
+    }
+}
+
+
+#' Remove contamination from plate data frame or list of plate data frames
+#'
+#' @param data Data object from read_data
+#' @return The original data object with all contaminated wells removed
+#' @export
+
+remove_contamination <- function(data){
+    if (class(data) == "list"){
+        lapply(data, function(x) {
+            x[[1]] <- dplyr::filter(x[[1]], !contamination)
+            return(x)
+        })
+    } else {
+        data <- dplyr::filter(!contamination)
+    }
 }
