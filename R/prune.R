@@ -173,7 +173,8 @@ bamf_prune <- function(data, drop = FALSE) {
     
     if (drop) {
         output <- output %>%
-            dplyr::filter(!bamfoutlier1 & !bamfoutlier2 & !bamfoutlier3)
+            dplyr::filter(!bamfoutlier1 & !bamfoutlier2 & !bamfoutlier3) %>%
+            select(-bamfoutlier1, -bamfoutlier2, -bamfoutlier3)
     }
     
     # Return the output data frame
@@ -234,4 +235,29 @@ categorize3 <- function(data) {
                    | (s4l >= 1 & s3l >= 1 & s2l >= 1)))
              & (fourls == 1 & (s5l + s4l + s3l + s2l) / numst <= .05))
     )
+}
+
+#' Prune data based on biological cutoffs
+#'
+#' Prune the data based on brood size and/or normalized brood size
+#'
+#' @param data A melted data frame to be analyzed for outliers.
+#' @param drop A boolean stating whether observations from outlier data points
+#' should be dropped from the returned data set. Defaults to \code{FALSE}.
+#' @return A data frame either with (\code{drop = TRUE}) all of the outlier data
+#' points removed from the data frame or (\code{drop = FALSE}) three additional
+#' columns stating whether the data point was identified as an outlier in any of
+#' the three conditions.
+#' @importFrom dplyr %>%
+#' @export
+
+bioprune <- function(data){
+    if ("norm.n" %in% colnames(sumdata)){
+        biopruneddata <- data %>%
+            filter(n > 5, n < 1000, norm.n < 350)
+    } else {
+        biopruneddata <- data %>%
+            filter(n > 5, n < 1000)
+    }
+    return(biopruneddata)
 }
