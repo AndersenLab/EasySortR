@@ -4,13 +4,19 @@
 \alias{sumplate}
 \title{Summarize a plate or multiple plates}
 \usage{
-sumplate(plates, quantiles = FALSE, log = FALSE, ends = FALSE,
-  long = FALSE)
+sumplate(plates, directories = FALSE, quantiles = FALSE, log = FALSE,
+  ends = FALSE, long = FALSE)
 }
 \arguments{
 \item{plates}{A single data frame of all data or a list consisting of all of
 the score plates in the first element and the setup plates in the second
-elements.}
+elements. Alternatively, a list of data frames can be supplied (the output
+from \code{read_data} if multiple directories are supplied) if the
+\code{directories} flag is set to \code{TRUE}.}
+
+\item{directories}{Set to \code{TRUE} if the supplied data comes from
+mutliple directories (e.g. the RIAILs1 or RIAILs2 data). Defaults to
+\code{FALSE}.}
 
 \item{quantiles}{Boolean indicating whether or not quantile values (q10, q25,
 q75, q90) should be included in the summarized data frame. Defaults to FALSE.}

@@ -2,19 +2,20 @@
 % Please edit documentation in R/regress.R
 \name{regress}
 \alias{regress}
-\title{Regress control values and, optionally, assay values from experimental values}
+\title{Regress control values or assay values from experimental values}
 \usage{
 regress(dataframe, assay = FALSE)
 }
 \arguments{
 \item{dataframe}{A data frame in long form that contains all of the experimental and control values.}
 
-\item{assay}{Boolean stating whether to regress out assay as well as controls.}
+\item{assay}{Boolean stating whether to regress out assay or controls. Assay
+if \code{TRUE}, controls if \code{FALSE}. Defaults to \code{FALSE}.}
 }
 \value{
 A data frame in long form
 }
 \description{
-Regress control values and, optionally, assay values from experimental values
+Regress control values or assay values from experimental values
 }
 
