@@ -1,8 +1,9 @@
-#' Regress control values and, optionally, assay values from experimental values
+#' Regress control values or assay values from experimental values
 #'
 #'
 #' @param dataframe A data frame in long form that contains all of the experimental and control values.
-#' @param assay Boolean stating whether to regress out assay as well as controls.
+#' @param assay Boolean stating whether to regress out assay or controls. Assay
+#' if \code{TRUE}, controls if \code{FALSE}. Defaults to \code{FALSE}.
 #' @return A data frame in long form
 #' @importFrom dplyr %>%
 #' @export
@@ -23,6 +24,16 @@ regress <- function(dataframe, assay=FALSE){
     # the residuals with the broom package
     
     if(assay){
+        
+        # Remove condition only present in one assay, otherwise regression will
+        # fail
+        
+        dataframe <- dataframe %>%
+            group_by(condition) %>%
+            filter(length(unique(assay)) > 1)
+        
+        # Get the model data
+        
         modeldata <- dataframe %>%
             dplyr::group_by(condition, trait) %>%
             dplyr::do(broom::augment(lm(phenotype ~ assay - 1,
