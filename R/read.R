@@ -34,67 +34,82 @@
 
 read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
                       extmax = 10000, SVM = TRUE, levels = 2) {
-
-    # NOTE: 'The next two lines were added to get known issue with
-    # dplyr::left_join treating character NAs incorrectly. This is currently
-    # (6/9/2015) issue number 965 for the dplyr package. It should be corrected
-    # in dplyr version 0.5. At that time, remove the two lines below as well as
-    # the reseting of the option at the end of the function and test the
-    # function to ensure that the strain names are still present after the point
-    # of the final in bamf_prune.
     
-    saf <- getOption("stringsAsFactors")
-    options(stringsAsFactors = TRUE)
+    # If the directory is a list of directories, call read_data for all of the
+    # directories in the list
     
-    
-    # Remove trailing '/' if present in the file path
-    
-    if (grepl("/$", filedir)){
-        filedir <- substr(filedir, 1, nchar(filedir) - 1)
-    }
-    
-    # If an individual file is given, read it in
-    
-    if (length(dir(filedir)) == 0){
-        data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM, levels)
-    } else if ("score" %in% dir(filedir) & "setup" %in% dir(filedir)) {
-        
-        # If both setup and score directories are subdirectories of the given
-        # directory, read in both directories and return them as a list
-        
-        scorepath <- file.path(filedir, "score")
-        setuppath <- file.path(filedir, "setup")
-        
-        # If the 'no files in directory' error is thrown by read_directory, 
-        # make it a bit more specific when it is thrown from read_data
-        
-        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
-                                levels)
-        setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM,
-                                levels)
-        data <- list(score, setup)
-    } else if ("score" %in% dir(filedir) & !("setup" %in% dir(filedir))) {
-        
-        # If in an experiment directory but there is no setup directory, read in
-        # everything from the score directory
-        
-        scorepath <- file.path(filedir, "score")
-        score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
-                                levels)
-        data <- score
+    if(length(filedir) > 1) {
+        data <- lapply(filedir, function(x) {read_data(x,
+                                               tofmin,
+                                               tofmax,
+                                               extmin,
+                                               extmax,
+                                               SVM,
+                                               levels)})
+        return(data)
     } else {
         
-        # Otherwise, just read in the given directory
+        # NOTE: 'The next two lines were added to get known issue with
+        # dplyr::left_join treating character NAs incorrectly. This is currently
+        # (6/9/2015) issue number 965 for the dplyr package. It should be corrected
+        # in dplyr version 0.5. At that time, remove the two lines below as well as
+        # the reseting of the option at the end of the function and test the
+        # function to ensure that the strain names are still present after the point
+        # of the final in bamf_prune.
         
-        data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM,
-                               levels)
+        saf <- getOption("stringsAsFactors")
+        options(stringsAsFactors = TRUE)
+        
+        
+        # Remove trailing '/' if present in the file path
+        
+        if (grepl("/$", filedir)){
+            filedir <- substr(filedir, 1, nchar(filedir) - 1)
+        }
+        
+        # If an individual file is given, read it in
+        
+        if (length(dir(filedir)) == 0){
+            data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM, levels)
+        } else if ("score" %in% dir(filedir) & "setup" %in% dir(filedir)) {
+            
+            # If both setup and score directories are subdirectories of the given
+            # directory, read in both directories and return them as a list
+            
+            scorepath <- file.path(filedir, "score")
+            setuppath <- file.path(filedir, "setup")
+            
+            # If the 'no files in directory' error is thrown by read_directory, 
+            # make it a bit more specific when it is thrown from read_data
+            
+            score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
+                                    levels)
+            setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM,
+                                    levels)
+            data <- list(score, setup)
+        } else if ("score" %in% dir(filedir) & !("setup" %in% dir(filedir))) {
+            
+            # If in an experiment directory but there is no setup directory, read in
+            # everything from the score directory
+            
+            scorepath <- file.path(filedir, "score")
+            score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
+                                    levels)
+            data <- score
+        } else {
+            
+            # Otherwise, just read in the given directory
+            
+            data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM,
+                                   levels)
+        }
+        
+        # NOTE: Remove the following line after dplyr updates to > v0.5. 
+        
+        options(stringsAsFactors = saf)
+        
+        return(data)
     }
-    
-    # NOTE: Remove the following line after dplyr updates to > v0.5. 
-    
-    options(stringsAsFactors = saf)
-    
-    return(data)
 }
 
 read_directory <- function(directory, tofmin = 60, tofmax = 2000, extmin = 0,
