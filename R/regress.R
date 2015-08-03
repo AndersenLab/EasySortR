@@ -29,8 +29,8 @@ regress <- function(dataframe, assay=FALSE){
         # fail
         
         dataframe <- dataframe %>%
-            group_by(condition) %>%
-            filter(length(unique(assay)) > 1)
+            dplyr::group_by(condition) %>%
+            dplyr::filter(length(unique(assay)) > 1)
         
         # Get the model data
         
@@ -65,8 +65,8 @@ regress <- function(dataframe, assay=FALSE){
         }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
         
         regressedframe <- regressedframe %>%
-            mutate(phenotype = resid) %>%
-            select(-resid)
+            dplyr::mutate(phenotype = resid) %>%
+            dplyr::select(-resid)
         
     } else {
         # Separate the data from the controls into two different data frames

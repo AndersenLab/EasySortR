@@ -174,7 +174,7 @@ bamf_prune <- function(data, drop = FALSE) {
     if (drop) {
         output <- output %>%
             dplyr::filter(!bamfoutlier1 & !bamfoutlier2 & !bamfoutlier3) %>%
-            select(-bamfoutlier1, -bamfoutlier2, -bamfoutlier3)
+            dplyr::select(-bamfoutlier1, -bamfoutlier2, -bamfoutlier3)
     }
     
     # Return the output data frame
@@ -252,12 +252,12 @@ categorize3 <- function(data) {
 #' @export
 
 bioprune <- function(data){
-    if ("norm.n" %in% colnames(sumdata)){
+    if ("norm.n" %in% colnames(data)){
         biopruneddata <- data %>%
-            filter(n > 5, n < 1000, norm.n < 350)
+            dplyr::filter(n > 5, n < 1000, norm.n < 350)
     } else {
         biopruneddata <- data %>%
-            filter(n > 5, n < 1000)
+            dplyr::filter(n > 5, n < 1000)
     }
     return(biopruneddata)
 }
