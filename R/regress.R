@@ -83,9 +83,6 @@ regress <- function(dataframe, assay=FALSE){
         moltencontrols <- controls %>% dplyr::group_by(strain, control, trait) %>%
             dplyr::summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
         
-        moltendata$control <- as.logical(moltendata$control)
-        moltencontrols$control <- as.logical(moltencontrols$control)
-        
         # Join the control values back to the controls
         
         fusedmoltendata <- dplyr::left_join(moltendata, moltencontrols,
@@ -126,8 +123,8 @@ regress <- function(dataframe, assay=FALSE){
         }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
         
         regressedframe <- regressedframe %>%
-            mutate(phenotype = resid) %>%
-            select(-resid, -controlphenotype)
+            dplyr::mutate(phenotype = resid) %>%
+            dplyr::select(-resid, -controlphenotype)
         
     }
     
