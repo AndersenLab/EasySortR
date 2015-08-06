@@ -100,11 +100,12 @@ bamf_prune <- function(data, drop = FALSE) {
                       s4l = sum(fourls, na.rm = TRUE),
                       s5l = sum(fivels, na.rm = TRUE),
                       s6h = sum(sixhs, na.rm = TRUE),
-                      s6l = sum(sixls, na.rm = TRUE))%>%
+                      s6l = sum(sixls, na.rm = TRUE))
         
-        # Group on condition and trait, then check to see if the number of
-        # points in each bin is more than 5% of the total number of data points
-        
+    # Group on condition and trait, then check to see if the number of
+    # points in each bin is more than 5% of the total number of data points
+    
+    datawithoutliers <- datawithoutliers %>%
         dplyr::group_by(condition, trait) %>%
         dplyr::mutate(p1h = ifelse(sum(onehs, na.rm = TRUE) / n() >= .05,1,0),
                       p2h = ifelse(sum(twohs, na.rm = TRUE) / n() >= .05,1,0),
@@ -118,15 +119,17 @@ bamf_prune <- function(data, drop = FALSE) {
                       p4l = ifelse(sum(fourls, na.rm = TRUE) / n() >= .05,1,0),
                       p5l = ifelse(sum(fivels, na.rm = TRUE) / n() >= .05,1,0),
                       p6l = ifelse(sum(sixls,
-                                       na.rm = TRUE) / n() >= .05,1,0)) %>%
+                                       na.rm = TRUE) / n() >= .05,1,0))
         
-        # Count the number of observations in each condition/trait combination
+    # Count the number of observations in each condition/trait combination
+    
+    datawithoutliers <- datawithoutliers %>%
+        dplyr::mutate(numst = n())
         
-        dplyr::mutate(numst = n()) %>%
+    # Group on condition and trait, then filter out NAs in any of the added
+    # columns
         
-        # Group on condition and trait, then filter out NAs in any of the added
-        # columns
-        
+    datawithoutliers <- datawithoutliers %>%
         dplyr::group_by(condition, trait) %>%
         dplyr::filter(!is.na(trait), !is.na(phenotype), !is.na(iqr), !is.na(q1),
                       !is.na(q3), !is.na(cut1h), !is.na(cut1l), !is.na(cut2h),
@@ -143,13 +146,15 @@ bamf_prune <- function(data, drop = FALSE) {
                       !is.na(p1h), !is.na(p2h), !is.na(p3h), !is.na(p4h),
                       !is.na(p5h), !is.na(p6h), !is.na(p1l), !is.na(p2l),
                       !is.na(p3l), !is.na(p4l), !is.na(p5l), !is.na(p6l),
-                      !is.na(numst)) %>%
+                      !is.na(numst))
         
-        # Add three columns stating whether the observation is an outlier
-        # based the three outlier detection functions below
-        
-        dplyr::ungroup() %>%
-        
+    # Add three columns stating whether the observation is an outlier
+    # based the three outlier detection functions below
+    
+    datawithoutliers <- datawithoutliers %>%
+        dplyr::ungroup()
+    
+    datawithoutliers <- datawithoutliers %>%
         dplyr::mutate(cuts = categorize1(.),
                       cuts1 = categorize2(.),
                       cuts2 = categorize3(.))
@@ -158,13 +163,16 @@ bamf_prune <- function(data, drop = FALSE) {
     # arrange by condition, row, and columns. Generally clean things up and bind
     # it back to the original data frame to regain lost data.
     
-    output <- datawithoutliers %>%
+    primaryselect <- datawithoutliers %>%
         dplyr::select(date, experiment, round, assay, condition, plate, row,
-                      col, trait, phenotype, cuts, cuts1, cuts2) %>%
+                      col, trait, phenotype, cuts, cuts1, cuts2) 
+    renamedcols <- primaryselect %>%
         dplyr::rename(bamfoutlier1 = cuts, bamfoutlier2 = cuts1,
-                      bamfoutlier3 = cuts2) %>%
-        dplyr::left_join(., data) %>%
-        dplyr::arrange(plate, row, as.numeric(col), trait) %>%
+                      bamfoutlier3 = cuts2) 
+    joineddata <- dplyr::left_join(renamedcols, data) 
+    arrangedcols <- joineddata %>%
+        dplyr::arrange(plate, row, as.numeric(col), trait)
+    output <- arrangedcols %>%
         dplyr::select(date, experiment, round, assay, condition, control, plate,
                       row, col, strain, trait, phenotype, bamfoutlier1,
                       bamfoutlier2, bamfoutlier3)
