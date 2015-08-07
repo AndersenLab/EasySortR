@@ -33,38 +33,16 @@ regress <- function(dataframe, assay=FALSE){
             dplyr::filter(length(unique(assay)) > 1)
         
         # Get the model data
+        # `deparse` and `substitute` are necessary to get the formula to work
+        # inside of a call to `mutate`, see:
+        # http://stackoverflow.com/questions/28776792/combining-dplyrdo-with-dplyrmutate
         
-        modeldata <- dataframe %>%
+        withresids <- dataframe %>%
             dplyr::group_by(condition, trait) %>%
-            dplyr::do(broom::augment(lm(phenotype ~ assay - 1,
-                        data=.)))
+            dplyr::mutate(resid = residuals(lm(deparse(substitute(
+                phenotype ~ assay - 1)))))
         
-        # Select only the information that we're interested in and rename .resid to
-        # just resid
-        
-        resids <- modeldata %>%
-            dplyr::select(condition, trait, phenotype, .resid) %>%
-            dplyr::rename(resid = .resid)
-        
-        # Arrange the columns so that they align for a cbind
-        
-        arrangedmolten <- dplyr::arrange(dataframe, condition, trait, phenotype)
-        arrangedresids <- dplyr::arrange(resids, condition, trait, phenotype)
-        
-        # Make sure that the number of rows between the two arranged data frames are
-        # the same and that the values for the matching columns are all the same
-        
-        tryCatch({
-            if (all.equal(arrangedmolten[,c("condition", "trait", "phenotype")],
-                          arrangedresids[,c("condition", "trait", "phenotype")])) {
-                regressedframe <- cbind(arrangedmolten, arrangedresids$resid) %>%
-                    dplyr::rename(resid = `arrangedresids$resid`)
-            } else {
-                stop("The values for the raw data (when arranged on 'condition', 'trait', 'phenotype', and 'controlphenotype' do not match up with same values in the residual data frame output by the broom package's augment function. Quitting to prevent binding of incorrect data")
-            }
-        }, error = function(e) stop("The number of rows in arrangedmolten and arrangedresids do not match."))
-        
-        regressedframe <- regressedframe %>%
+        regressedframe <- withresids %>%
             dplyr::mutate(phenotype = resid) %>%
             dplyr::select(-resid)
         
@@ -89,37 +67,21 @@ regress <- function(dataframe, assay=FALSE){
                                             by=c("strain", "control", "trait")) %>%
             dplyr::filter(!is.na(phenotype), !is.na(controlphenotype))
         
-        modeldata <- fusedmoltendata %>%
+        # Get the model data
+        # `deparse` and `substitute` are necessary to get the formula to work
+        # inside of a call to `mutate`, see:
+        # http://stackoverflow.com/questions/28776792/combining-dplyrdo-with-dplyrmutate
+        
+        withresids <- fusedmoltendata %>%
             dplyr::group_by(condition, trait) %>%
-            dplyr::do(broom::augment(lm(phenotype ~ controlphenotype, data=.)))
+            dplyr::mutate(resid = residuals(lm(deparse(substitute(
+                phenotype ~ controlphenotype - 1)))))
         
-        # Select only the information that we're interested in and rename .resid to
-        # just resid
-        
-        resids <- modeldata %>%
-            dplyr::select(condition, trait, phenotype, controlphenotype, .resid) %>%
-            dplyr::rename(resid = .resid)
-        
-        # Arrange the columns so that they align for a cbind
-        
-        arrangedmolten <- dplyr::arrange(fusedmoltendata, condition, trait, phenotype,
-                                         controlphenotype)
-        arrangedresids <- dplyr::arrange(resids, condition, trait, phenotype,
-                                         controlphenotype)
-        
-        # Make sure that the number of rows between the two arranged data frames are
-        # the same and that the values for the matching columns are all the same
-        
-        regressedframe <- cbind(arrangedmolten, arrangedresids$resid) %>%
-            dplyr::rename(resid = `arrangedresids$resid`)
-        
-        regressedframe <- regressedframe %>%
+        regressedframe <- withresids %>%
             dplyr::mutate(phenotype = resid) %>%
             dplyr::select(-resid, -controlphenotype)
         
     }
-    
-
     
     return(regressedframe)
 }
