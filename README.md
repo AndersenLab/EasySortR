@@ -153,3 +153,46 @@ For further information use the command `?regress` to access the documentation.
 ### Overview
 
 ![Overview](./READMEfiles/Overview.png)
+
+### Example
+
+```r
+library(easysorter)
+library(dplyr)
+
+# Define a vector of your experiement directories
+dirs <- c("~/Dropbox/HTA/Results/20150706_McGrathRILs1a/",
+          "~/Dropbox/HTA/Results/20150707_McGrathRILs1b/")
+
+# Read in the data
+raw <- read_data(dirs)
+
+# Remove all data from the contaminated wells
+raw_nocontam <- remove_contamination(raw)
+
+# Summarize the data
+summedraw <- sumplate(raw_nocontam, directories = TRUE, quantiles = TRUE)
+
+#Prune based on biological impossibilities
+biopruned <- bioprune(summedraw)
+
+# Regress out the effect of assay first
+assayregressed <- regress(biopruned, assay = TRUE)
+
+# Prune based on bins
+bamfpruned <- bamf_prune(assayregressed, drop = TRUE)
+
+# If you have replicates in the data, summarize the data down to one observation
+# per strain. Here we do that by taking the mean of the two replicates. Make
+# sure to include `na.rm = TRUE` to avoid losing data missing in only one assay.
+sumpruned <- bamfpruned %>%
+    group_by(condition, control, strain, trait) %>%
+    summarize(phenotype = mean(phenotype, na.rm = TRUE))
+
+# Regress out the effect of the control strains (effects not due to changed
+# environmental condition)
+LSJ2data <- regress(sumpruned)
+
+# Save the final data frame
+saveRDS(LSJ2data, "~/LSJ2phenotype.rds")
+```
