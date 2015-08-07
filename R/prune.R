@@ -159,6 +159,10 @@ bamf_prune <- function(data, drop = FALSE) {
                       cuts1 = categorize2(.),
                       cuts2 = categorize3(.))
     
+    # Necessary to prevent segfaults
+    
+    datawithoutliers <- data.frame(datawithoutliers)
+    
     # Select the necessary columns, rename the outlier calling columns, and
     # arrange by condition, row, and columns. Generally clean things up and bind
     # it back to the original data frame to regain lost data.
@@ -176,6 +180,10 @@ bamf_prune <- function(data, drop = FALSE) {
         dplyr::select(date, experiment, round, assay, condition, control, plate,
                       row, col, strain, trait, phenotype, bamfoutlier1,
                       bamfoutlier2, bamfoutlier3)
+    
+    # Necessary to prevent segfaults
+    
+    output <- data.frame(output)
     
     # If the user wants to drop the outliers, filter against all three columns
     
