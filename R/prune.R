@@ -173,7 +173,10 @@ bamf_prune <- function(data, drop = FALSE) {
     renamedcols <- primaryselect %>%
         dplyr::rename(bamfoutlier1 = cuts, bamfoutlier2 = cuts1,
                       bamfoutlier3 = cuts2) 
-    joineddata <- dplyr::left_join(renamedcols, data) 
+    joineddata <- dplyr::left_join(renamedcols, data,
+                                   by = c("date", "experiment", "round",
+                                          "assay", "condition", "plate", "row",
+                                          "col", "trait", "phenotype")) 
     arrangedcols <- joineddata %>%
         dplyr::arrange(plate, row, as.numeric(col), trait)
     output <- arrangedcols %>%
