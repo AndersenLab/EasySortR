@@ -112,7 +112,7 @@ File names should be formatted with the plate number, name of the strains templa
 
 ## Pipeline
 
-The complete easy sorter package consists of only five functions: `read_data`, `sumplate`, `bamf_prune`, and `regress`.
+The complete easy sorter package consists of only 6 functions: `read_data`, `remove_contamination`, `sumplate`, `bioprune`, `bamf_prune`, and `regress`.
 
 ### `read_data()`
 
@@ -120,11 +120,23 @@ The complete easy sorter package consists of only five functions: `read_data`, `
 
 For further information use the command `?read_plate` to access the documentation.
 
+### `remove_contamination()`
+
+`remove_contamination()` takes as an argument the raw data output from read_data. It will automatically remove any data from contaminated wells as per the contamination files stored in the data directory.
+
+For further information use the command `?remove_contamination()` to access the documentation.
+
 ### `sumplate()`
 
 `sumplate` summarizes the plates that have been read in to R using the `read_data` function. This function can take either a single data frame or the list of two data frames. If a list is passed, the `n.sorted` column will be calculated automatically using the setup data. Otherwise, n.sorted will be set to 0 and can be changed manually by the user.
 
 For further information use the command `?sumplate` to access the documentation.
+
+### `bioprune()`
+
+`bioprune` will remove any biologically impossible wells from the data set (n > 1000, n < 5, norm.n > 350). It takes as input the standard output from `sumplate`.
+
+For further information use the command `?bioprune` to access the documentation.
 
 ### `bamf_prune()`
 
@@ -134,7 +146,7 @@ For further information use the command `?bamf_prune` to access the documentatio
 
 ### `regress()`
 
-`regress()` can take either a pruned or unpruned data frame and will return a data frame in long form with an added column consisting of the residuals from the linear fit (either `phenotype ~ control` or `phenotype ~ control + assay`).
+`regress()` can take either a pruned or unpruned data frame and will return a data frame in long form with the phenotype column replaced with residual values (either `phenotype ~ control` if `assay = FALSE` or `phenotype ~ assay` if `assay = TRUE`).
 
 For further information use the command `?regress` to access the documentation.
 
