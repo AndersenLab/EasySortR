@@ -128,7 +128,7 @@ bamf_prune <- function(data, drop = FALSE) {
         
     # Group on condition and trait, then filter out NAs in any of the added
     # columns
-        
+    
     datawithoutliers <- datawithoutliers %>%
         dplyr::group_by(condition, trait) %>%
         dplyr::filter(!is.na(trait), !is.na(phenotype), !is.na(iqr), !is.na(q1),
@@ -155,41 +155,40 @@ bamf_prune <- function(data, drop = FALSE) {
         dplyr::ungroup()
     
     datawithoutliers <- datawithoutliers %>%
-        dplyr::mutate(cuts = categorize1(.),
-                      cuts1 = categorize2(.),
-                      cuts2 = categorize3(.))
+        dplyr::mutate(cuts = categorize1(.))
+
+    datawithoutliers <- datawithoutliers %>%
+        dplyr::mutate(cuts1 = categorize2(.))
     
-    # Necessary to prevent segfaults
-    
-    datawithoutliers <- data.frame(datawithoutliers)
+    datawithoutliers <- datawithoutliers %>%
+        dplyr::mutate(cuts2 = categorize3(.))
     
     # Select the necessary columns, rename the outlier calling columns, and
     # arrange by condition, row, and columns. Generally clean things up and bind
     # it back to the original data frame to regain lost data.
-    
     primaryselect <- datawithoutliers %>%
         dplyr::select(date, experiment, round, assay, condition, plate, row,
-                      col, trait, phenotype, cuts, cuts1, cuts2) 
+                      col, trait, phenotype, cuts, cuts1, cuts2)
+    
     renamedcols <- primaryselect %>%
         dplyr::rename(bamfoutlier1 = cuts, bamfoutlier2 = cuts1,
-                      bamfoutlier3 = cuts2) 
+                      bamfoutlier3 = cuts2)
+    
     joineddata <- dplyr::left_join(renamedcols, data,
                                    by = c("date", "experiment", "round",
                                           "assay", "condition", "plate", "row",
-                                          "col", "trait", "phenotype")) 
+                                          "col", "trait", "phenotype"))
+
     arrangedcols <- joineddata %>%
         dplyr::arrange(plate, row, as.numeric(col), trait)
+
     output <- arrangedcols %>%
         dplyr::select(date, experiment, round, assay, condition, control, plate,
                       row, col, strain, trait, phenotype, bamfoutlier1,
                       bamfoutlier2, bamfoutlier3)
     
-    # Necessary to prevent segfaults
-    
-    output <- data.frame(output)
-    
     # If the user wants to drop the outliers, filter against all three columns
-    
+
     if (drop) {
         output <- output %>%
             dplyr::filter(!bamfoutlier1 & !bamfoutlier2 & !bamfoutlier3) %>%
@@ -197,7 +196,7 @@ bamf_prune <- function(data, drop = FALSE) {
     }
     
     # Return the output data frame
-    
+
     return(output)
 }
 
