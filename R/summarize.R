@@ -379,9 +379,19 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #' @importFrom dplyr %>%
 #' @export
 
-sumplate <- function(plates, directories = FALSE, quantiles = FALSE,
+sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantiles = FALSE,
                      log = FALSE, ends = FALSE, long = FALSE) {
     
+  
+  #   if no sort day, generate dummy data
+  
+  if(picked_plates == TRUE){
+    sort_plate <- plates 
+    sort_plate$sort <- 3
+    
+    plates <- list(plates, sort_plate)
+  }
+  
     # If directories iss not set to true and the list looks like it came from
     # multiple directories, alert the user.
     
