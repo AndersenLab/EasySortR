@@ -247,6 +247,7 @@ read_template <- function(templatefile, type){
     # Read in the teamplate file and melt it with tidyr
     
     template <- read.csv(templatefile, check.names=FALSE)
+    template <- template[,!colnames(template)==""]
     melttemplate <- tidyr::gather(template, col, variable, -row)
     
     # Change the column names based on the type of template and return the data
