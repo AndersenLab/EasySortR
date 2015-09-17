@@ -2,7 +2,7 @@
 % Please edit documentation in R/summarize.R
 \name{remove_contamination}
 \alias{remove_contamination}
-\title{Remove contamination from plate data frame or list of plate data frames}
+\title{Remove contamination from plate data frame or list of plate data frames. Also removes bubble calls from data.}
 \usage{
 remove_contamination(data)
 }
@@ -13,6 +13,6 @@ remove_contamination(data)
 The original data object with all contaminated wells removed
 }
 \description{
-Remove contamination from plate data frame or list of plate data frames
+Remove contamination from plate data frame or list of plate data frames. Also removes bubble calls from data.
 }
 

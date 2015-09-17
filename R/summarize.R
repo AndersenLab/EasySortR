@@ -428,19 +428,22 @@ sumplate <- function(plates, directories = FALSE, quantiles = FALSE,
 }
 
 
-#' Remove contamination from plate data frame or list of plate data frames
+#' Remove contamination from plate data frame or list of plate data frames. Also removes bubble calls from data.
 #'
 #' @param data Data object from read_data
 #' @return The original data object with all contaminated wells removed
 #' @export
 
 remove_contamination <- function(data){
-    if (class(data) == "list"){
-        lapply(data, function(x) {
-            x[[1]] <- dplyr::filter(x[[1]], !contamination)
-            return(x)
-        })
-    } else {
-        data <- dplyr::filter(!contamination)
-    }
+  if (class(data) == "list") {
+    lapply(data, function(x) {
+      x <- dplyr::filter(x, !contamination) %>%
+        dplyr::filter(call50 != "bubble")
+      return(x)
+    })
+  }
+  else {
+    data <- dplyr::filter(data, !contamination)%>%
+      dplyr::filter(call50 != "bubble")
+  }
 }
