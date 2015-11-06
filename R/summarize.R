@@ -445,15 +445,19 @@ sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantil
 #' @export
 
 remove_contamination <- function(data){
-  if (class(data) == "list") {
-    lapply(data, function(x) {
-      x[[1]] <- dplyr::filter(x[[1]], !contamination) %>%
+  if (class(data[[1]]) == "list") {
+    for(i in length(data)){
+      data[[i]][[1]] <- dplyr::filter(data[[i]][[1]], !contamination)%>%
         dplyr::filter(call50 != "bubble")
-      return(x)
-    })
+      data[[i]][[2]] <- dplyr::filter(data[[i]][[2]], !contamination)%>%
+        dplyr::filter(call50 != "bubble")
+    }
   }
   else {
-    data <- dplyr::filter(data, !contamination)%>%
+    data[[1]] <- dplyr::filter(data[[1]], !contamination)%>%
+      dplyr::filter(call50 != "bubble")
+    data[[2]] <- dplyr::filter(data[[2]], !contamination)%>%
       dplyr::filter(call50 != "bubble")
   }
+  return(data)
 }
