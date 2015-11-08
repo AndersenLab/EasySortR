@@ -52,7 +52,7 @@ regress <- function(dataframe, assay=FALSE){
         data <- dataframe %>%
             dplyr::filter(!is.na(control))
         controls <- dataframe %>%
-            dplyr::filter(is.na(control))
+            dplyr::filter(is.na(control) | control == "None")
         controls$control <- controls$condition
         moltendata <- data
 
