@@ -72,14 +72,20 @@ regress <- function(dataframe, assay=FALSE){
         # inside of a call to `mutate`, see:
         # http://stackoverflow.com/questions/28776792/combining-dplyrdo-with-dplyrmutate
 
-        withresids <- fusedmoltendata %>%
-            dplyr::group_by(condition, trait) %>%
-            dplyr::mutate(resid = residuals(lm(deparse(substitute(
-                phenotype ~ controlphenotype - 1)))))
-
+        regressed <- fusedmoltendata %>%
+          dplyr::group_by(condition, trait) %>%
+          do(fit = lm(phenotype ~ controlphenotype - 1, .))
+        
+        withresids <- regressed%>%
+          broom::augment(fit)%>%
+          ungroup()%>%
+          left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
+          distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
+          rename(resid = .resid)
+        
         regressedframe <- withresids %>%
-            dplyr::mutate(phenotype = resid) %>%
-            dplyr::select(-resid, -controlphenotype)
+          dplyr::mutate(phenotype = resid) %>%
+          dplyr::select(-resid, -controlphenotype)
 
     }
 
