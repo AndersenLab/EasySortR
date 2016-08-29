@@ -44,13 +44,13 @@ regress <- function(dataframe, assay=FALSE){
         withresids <- regressed%>%
           broom::augment(fit)%>%
           ungroup()%>%
-          left_join(dataframe,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
-          distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
+          left_join(dataframe,.,by=c("condition", "trait", "phenotype", "assay"))%>%
+          distinct(condition, trait, phenotype,strain,row,col,plate,.keep_all = T)%>%
           rename(resid = .resid)
         
         regressedframe <- withresids %>%
           dplyr::mutate(phenotype = resid) %>%
-          dplyr::select(-resid, -controlphenotype)
+          dplyr::select(-resid, -.fitted, -.se.fit, -.hat, -.sigma, -.cooksd, -.std.resid)
 
     } else {
         # Separate the data from the controls into two different data frames
