@@ -37,14 +37,14 @@ regress <- function(dataframe, assay=FALSE){
         # inside of a call to `mutate`, see:
         # http://stackoverflow.com/questions/28776792/combining-dplyrdo-with-dplyrmutate
 
-        regressed <- fusedmoltendata %>%
+        regressed <- dataframe %>%
           dplyr::group_by(condition, trait) %>%
           do(fit = lm(phenotype ~ assay - 1, .))
         
         withresids <- regressed%>%
           broom::augment(fit)%>%
           ungroup()%>%
-          left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
+          left_join(dataframe,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
           distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
           rename(resid = .resid)
         
