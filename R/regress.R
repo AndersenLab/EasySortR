@@ -86,7 +86,7 @@ regress <- function(dataframe, assay=FALSE){
           broom::augment(fit)%>%
           ungroup()%>%
           left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
-          distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
+          distinct(condition, trait, phenotype, controlphenotype,strain,.keep_all = T)%>%
           rename(resid = .resid)
         
         regressedframe <- withresids %>%
