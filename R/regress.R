@@ -80,14 +80,21 @@ regress <- function(dataframe, assay=FALSE){
 
         regressed <- fusedmoltendata %>%
           dplyr::group_by(condition, trait) %>%
-          do(fit = lm(phenotype ~ controlphenotype - 1, .))
+          dplyr::do(fit = lm(phenotype ~ controlphenotype - 1, .))
         
         withresids <- regressed%>%
           broom::augment(fit)%>%
+<<<<<<< Updated upstream
           ungroup()%>%
           left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
           distinct(condition, trait, phenotype, controlphenotype,strain,.keep_all = T)%>%
           rename(resid = .resid)
+=======
+          dplyr::ungroup()%>%
+          dplyr::left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
+          dplyr::distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
+          dplyr::rename(resid = .resid)
+>>>>>>> Stashed changes
         
         regressedframe <- withresids %>%
           dplyr::mutate(phenotype = resid) %>%
