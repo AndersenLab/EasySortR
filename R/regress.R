@@ -98,3 +98,71 @@ regress <- function(dataframe, assay=FALSE){
 
     return(regressedframe)
 }
+
+
+#' Select alternative method for control value regression
+#'
+#'
+#' @param dataframe A data frame in long form that contains all of the experimental and control values.
+#' @param method Type of regression desired. Either "deltapheno" (default), which takes each condition
+#' data point subtracted from the mean control phenotype per strain, or "fracpheno" which takes each
+#' condition data point divided by the mean control phenotype per strain.
+#' @return A data frame in long form
+#' @importFrom dplyr %>%
+#' @export
+#' 
+
+altregress <- function(dataframe, method= "deltapheno"){
+    # Ensure the data frame is in long format, then filter out all NA strains
+    # and nonfinite (NA, NaN, Inf) values
+    
+    if(method %nin% c("deltapheno","fracpheno")) stop("Regression method not recognized")
+    
+    dataframe <- ensure_long(dataframe)
+    dataframe <- dplyr::filter(dataframe, is.finite(phenotype), !is.na(strain))
+    
+    # Get rid of n.sorted phenotype values (always 0)
+    
+    dataframe <- dataframe %>%
+        dplyr::filter(trait != "n.sorted")
+    
+    # Separate the data from the controls into two different data frames
+    
+    data <- dataframe %>%
+        dplyr::filter(!is.na(control))
+    controls <- dataframe %>%
+        dplyr::filter(is.na(control) | control == "None")
+    controls$control <- controls$condition
+    moltendata <- data
+    
+    # Summarize the controls in case there are replicate controls
+    
+    moltencontrols <- controls %>% dplyr::group_by(strain, control, trait, assay) %>%
+        dplyr::summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
+    
+    # Join the control values back to the controls
+    
+    fusedmoltendata <- dplyr::left_join(moltendata, moltencontrols,
+                                        by=c("strain", "control", "trait", "assay")) %>%
+        dplyr::filter(!is.na(phenotype), !is.na(controlphenotype))
+    
+    #Add columns with the delta phenotype (strain's control average - condition data point) and fraction
+    #phenotype (phenotype data point / strain's control average)
+    
+    regression <- fusedmoltendata %>%
+        dplyr::group_by(condition, trait, strain) %>%
+        mutate(deltapheno = controlphenotype - phenotype, fracpheno = phenotype / controlphenotype)
+    
+    if(method == "deltapheno") {
+        regressedframe <- regression %>%
+            dplyr::mutate(phenotype = deltapheno) %>%
+            dplyr::select(-deltapheno, -fracpheno, -controlphenotype)
+    } else if(method == "fracpheno") {
+        regressedframe <- regression %>%
+            dplyr::mutate(phenotype = fracpheno) %>%
+            dplyr::select(-deltapheno, -fracpheno, -controlphenotype)
+    }
+    
+    
+    return(regressedframe)
+}
