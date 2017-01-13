@@ -43,10 +43,10 @@ regress <- function(dataframe, assay=FALSE){
         
         withresids <- regressed%>%
           broom::augment(fit)%>%
-          ungroup()%>%
-          left_join(dataframe,.,by=c("condition", "trait", "phenotype", "assay"))%>%
-          distinct(condition, trait, phenotype,strain,row,col,plate,.keep_all = T)%>%
-          rename(resid = .resid)
+          dplyr::ungroup()%>%
+          dplyr::left_join(dataframe,.,by=c("condition", "trait", "phenotype", "assay"))%>%
+          dplyr::distinct(condition, trait, phenotype,strain,row,col,plate,.keep_all = T)%>%
+          dplyr::rename(resid = .resid)
         
         regressedframe <- withresids %>%
           dplyr::mutate(phenotype = resid) %>%
@@ -151,7 +151,7 @@ altregress <- function(dataframe, method= "deltapheno"){
     
     regression <- fusedmoltendata %>%
         dplyr::group_by(condition, trait, strain) %>%
-        mutate(deltapheno = controlphenotype - phenotype, fracpheno = phenotype / controlphenotype)
+        dplyr::mutate(deltapheno = controlphenotype - phenotype, fracpheno = phenotype / controlphenotype)
     
     if(method == "deltapheno") {
         regressedframe <- regression %>%
