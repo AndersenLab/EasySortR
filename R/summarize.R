@@ -446,7 +446,7 @@ sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantil
 
 remove_contamination <- function(data){
   if (class(data[[1]]) == "list") {
-    for(i in length(data)){
+    for(i in 1:length(data)){
       data[[i]][[1]] <- dplyr::filter(data[[i]][[1]], !contamination)%>%
         dplyr::filter(call50 != "bubble")
       data[[i]][[2]] <- dplyr::filter(data[[i]][[2]], !contamination)%>%
