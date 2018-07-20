@@ -1,9 +1,10 @@
 # easysorter
 
-easysorter is effectively version 2 of the COPASutils package (Shimko and Andersen, 2014). This package is specialized for use with worms and includes additional functionality on top of that provided by COPASutils, including division of recorded objects by larval stage and the ability to regress out control phenotypes from those recorded in experimental conditions. The package is rather specific to use in the Andersen Lab and, therefore, is not available from CRAN. To install you will need the [`devtools`](https://github.com/hadley/devtools) package. You can install both the `devtools` package and easy sorter using the commands below:
+easysorter is effectively version 2 of the COPASutils package (Shimko and Andersen, 2014). This package is specialized for use with worms and includes additional functionality on top of that provided by COPASutils, including division of recorded objects by larval stage and the ability to regress out control phenotypes from those recorded in experimental conditions. The package is rather specific to use in the Andersen Lab and, therefore, is not available from CRAN. To install easysorter you will need the [`devtools`](https://github.com/hadley/devtools) package and the [`COPASutils`](https://github.com/AndersenLab/COPASutils) package. You can install `devtools`, `COPASutils`, and `easysorter` using the commands below:
 
 ```r
 install.packages("devtools")
+devtools::install_github("AndersenLab/COPASutils")
 devtools::install_github("AndersenLab/easysorter")
 ```
 
