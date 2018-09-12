@@ -279,3 +279,80 @@ bioprune <- function(data){
     }
     return(biopruneddata)
 }
+
+#' Prune based on outliers
+#'
+#' Prune based on outliers being +/- 2 IQR from the median or +/- 2 standard deviations
+#' from the mean for each strain. Use for NIL assays with replicates, not mapping experiments.
+#'
+#' @param data A melted data frame to be analyzed for outliers.
+#' @param iqr A boolean stating whether observations should be called outlier data points
+#' from med +/- 2*IQR. Defaults to \code{FALSE} - uses mean +/- 2*sd.
+#' @return A data frame either with all of the outlier data
+#' points removed from the data frame
+#' @importFrom dplyr %>%
+#' @export
+#' 
+
+prune_outliers <- function(data, iqr = FALSE) {
+    
+    # Make sure that the data being fed into the pruning function is in long
+    # format
+    
+    data <- ensure_long(data)
+    
+    # remove NA phenotypes
+    
+    napheno <- data[is.na(data[, "phenotype"]), ]
+    
+    # if type is IQR: 
+    if(iqr == TRUE) {
+        
+        datacuts <- data %>%
+            
+            # Filter out all of the wash and/or empty wells
+            dplyr::filter(!is.na(strain)) %>%
+            
+            # Group on condition, trait, and strain
+            dplyr::group_by(condition, trait, strain) %>%
+            
+            # calculate the median, mean, 2IQR and 2sd
+            dplyr::mutate(med = median(phenotype), 
+                          iqr = IQR(phenotype),
+                          mph = mean(phenotype), 
+                          sph = sd(phenotype)) %>%
+            dplyr::ungroup() %>%
+            
+            # Filter phenotype +/- 2*IQR
+            dplyr::filter(phenotype >= med - 2*iqr, phenotype <= 2*iqr + med) %>%
+            
+            # select out columns not needed
+            dplyr::select(-c(med:sph))
+        
+        # if type is not IQR, it should be SD
+    } else {
+        
+        datacuts <- data %>%
+            
+            # Filter out all of the wash and/or empty wells
+            dplyr::filter(!is.na(strain)) %>%
+            
+            # Group on condition, trait, and strain
+            dplyr::group_by(condition, trait, strain) %>%
+            
+            # calculate the median, mean, 2IQR and 2sd
+            dplyr::mutate(med = median(phenotype), 
+                          iqr = IQR(phenotype),
+                          mph = mean(phenotype), 
+                          sph = sd(phenotype)) %>%
+            dplyr::ungroup() %>%
+            
+            # Filter phenotype +/- 2*IQR
+            dplyr::filter(phenotype >= mph - 2*sph, phenotype <= 2*sph + mph) %>%
+            
+            # select out columns not needed
+            dplyr::select(-c(med:sph))
+    }
+    
+    return(datacuts)
+}
