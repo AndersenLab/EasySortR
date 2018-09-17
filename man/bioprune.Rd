@@ -21,4 +21,3 @@ the three conditions.
 \description{
 Prune the data based on brood size and/or normalized brood size
 }
-

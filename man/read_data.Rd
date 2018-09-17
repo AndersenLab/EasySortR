@@ -48,4 +48,3 @@ by the function. This function also utilizes an SVM to determine whether
 objects are more likely to be bubbles or worms and labels them accordingly.
 It also estimates the lifestage of each worm.
 }
-

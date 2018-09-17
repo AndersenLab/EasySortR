@@ -19,4 +19,3 @@ A data frame in long form
 \description{
 Select alternative method for control value regression
 }
-
