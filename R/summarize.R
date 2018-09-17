@@ -1,5 +1,5 @@
 summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
-                             ends = FALSE, long = FALSE) {
+                             ends = FALSE, long = FALSE, v3_assay = FALSE) {
     
     # Select only objects, missing rows, or calls not made
     
@@ -360,6 +360,9 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #' consisting of all of the score plates to be summarized. The second element
 #' in the list should be a data frame consisting of all of the setup plates to
 #' be summarized, from which the number sorted to each well will be extracted.
+#' 
+#' Edit: 20190913 KSE - add v3_assay flag. Default = false (no changes to original)
+#' If v3_assay = TRUE; expect only a score plate and no sort data.
 #'
 #' @param plates A single data frame of all data or a list consisting of all of
 #' the score plates in the first element and the setup plates in the second
@@ -376,16 +379,17 @@ summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
 #' @param ends Boolean indicating whether or not min and max values should be
 #' included in the summarized data frame. Defaults to FALSE.
 #' @param long Boolean stating whether to output the data in long format.
+#' @param v3_assay Boolean stating whether assay was V2 (FALSE) or V3 (TRUE)
 #' @importFrom dplyr %>%
 #' @export
 
 sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantiles = FALSE,
-                     log = FALSE, ends = FALSE, long = FALSE) {
+                     log = FALSE, ends = FALSE, long = FALSE, v3_assay = FALSE) {
     
   
-  #   if no sort day, generate dummy data
+  #   if no sort day, generate dummy data (also for v3 assay)
   
-  if(picked_plates == TRUE){
+  if(picked_plates == TRUE | v3_assay == TRUE){
     sort_plate <- plates 
     sort_plate$sort <- 3
     
@@ -420,12 +424,22 @@ sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantil
                 dplyr::group_by(date, experiment, round, assay,
                                 plate, condition, row, col) %>%
                 dplyr::summarize(control.n.sorted = sum(sort == 6))
-            data <- dplyr::left_join(score, setup,
-                                     by = c("date", "experiment", "round",
-                                            "assay", "plate", "condition",
-                                            "row", "col")) %>%
-                dplyr::mutate(norm.n = n / control.n.sorted) %>%
-                dplyr::select(-n.sorted, -control.n.sorted)
+            
+            # if v3_assay = T, norm.n is not calculated
+            if(v3_assay == TRUE) {
+                data <- dplyr::left_join(score, setup,
+                                         by = c("date", "experiment", "round",
+                                                "assay", "plate", "condition",
+                                                "row", "col")) %>%
+                    dplyr::select(-n.sorted, -control.n.sorted)
+            } else {
+                data <- dplyr::left_join(score, setup,
+                                         by = c("date", "experiment", "round",
+                                                "assay", "plate", "condition",
+                                                "row", "col")) %>%
+                    dplyr::mutate(norm.n = n / control.n.sorted) %>%
+                    dplyr::select(-n.sorted, -control.n.sorted)
+            }
         } else {
             
             # Otherwise, just summarize the plate
@@ -439,6 +453,7 @@ sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantil
 
 
 #' Remove contamination from plate data frame or list of plate data frames. Also removes bubble calls from data.
+#' Edit KSE 20190913 - for V3 (L1-L4 48h assay), if data is simply a data.frame, remove contaminations without errors
 #'
 #' @param data Data object from read_data
 #' @return The original data object with all contaminated wells removed
@@ -453,11 +468,15 @@ remove_contamination <- function(data){
         dplyr::filter(call50 != "bubble")
     }
   }
-  else {
-    data[[1]] <- dplyr::filter(data[[1]], !contamination)%>%
-      dplyr::filter(call50 != "bubble")
-    data[[2]] <- dplyr::filter(data[[2]], !contamination)%>%
-      dplyr::filter(call50 != "bubble")
-  }
+  else if(class(data) == "data.frame") {
+      data <- dplyr::filter(data, !contamination)%>%
+          dplyr::filter(call50 != "bubble")
+    }
+    else {
+        data[[1]] <- dplyr::filter(data[[1]], !contamination)%>%
+          dplyr::filter(call50 != "bubble")
+        data[[2]] <- dplyr::filter(data[[2]], !contamination)%>%
+          dplyr::filter(call50 != "bubble")
+      }
   return(data)
 }
