@@ -15,4 +15,3 @@ The original data object with all contaminated wells removed
 \description{
 Remove contamination from plate data frame or list of plate data frames. Also removes bubble calls from data.
 }
-

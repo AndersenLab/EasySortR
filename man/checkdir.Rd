@@ -12,4 +12,3 @@ checkdir(dirname)
 \description{
 Check directory naming
 }
-

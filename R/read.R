@@ -23,6 +23,7 @@
 #' directory containing information about experiment date, name, round, and
 #' assay. Defaults to 2, which is the standard for Andersen Lab file structure
 #' as of June 2015.
+#' @param ... Optional specifications for COPAS functions, such as reflx = FALSE
 #' @return If a single file is given, a single data frame for only the provided
 #' plate is returned. If an experiment directory is given, a list of two data
 #' frames will be returned. The first element in the list will be a single data
@@ -33,7 +34,7 @@
 #' @export
 
 read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
-                      extmax = 10000, SVM = TRUE, levels = 2) {
+                      extmax = 10000, SVM = TRUE, levels = 2, ...) {
     
     # If the directory is a list of directories, call read_data for all of the
     # directories in the list
@@ -45,7 +46,7 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
                                                extmin,
                                                extmax,
                                                SVM,
-                                               levels)})
+                                               levels, ...)})
         return(data)
     } else {
         
@@ -70,7 +71,7 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
         # If an individual file is given, read it in
         
         if (length(dir(filedir)) == 0){
-            data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM, levels)
+            data <- read_file(filedir, tofmin, tofmax, extmin, extmax, SVM, levels, ...)
         } else if ("score" %in% dir(filedir) & "setup" %in% dir(filedir)) {
             
             # If both setup and score directories are subdirectories of the given
@@ -83,9 +84,9 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
             # make it a bit more specific when it is thrown from read_data
             
             score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
-                                    levels)
+                                    levels, ...)
             setup <- read_directory(setuppath, tofmin, tofmax, extmin, extmax, SVM,
-                                    levels)
+                                    levels, ...)
             data <- list(score, setup)
         } else if ("score" %in% dir(filedir) & !("setup" %in% dir(filedir))) {
             
@@ -94,14 +95,14 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
             
             scorepath <- file.path(filedir, "score")
             score <- read_directory(scorepath, tofmin, tofmax, extmin, extmax, SVM,
-                                    levels)
+                                    levels, ...)
             data <- score
         } else {
             
             # Otherwise, just read in the given directory
             
             data <- read_directory(filedir, tofmin, tofmax, extmin, extmax, SVM,
-                                   levels)
+                                   levels, ...)
         }
         
         # NOTE: Remove the following line after dplyr updates to > v0.5. 
@@ -113,7 +114,7 @@ read_data <- function(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
 }
 
 read_directory <- function(directory, tofmin = 60, tofmax = 2000, extmin = 0,
-                           extmax = 10000, SVM = TRUE, levels = 2) {
+                           extmax = 10000, SVM = TRUE, levels = 2, ...) {
     
     # Get all of the txt files from adirectory and read them in individually.
     # Then rbind them and return a data frame.
@@ -128,28 +129,41 @@ read_directory <- function(directory, tofmin = 60, tofmax = 2000, extmin = 0,
     filepaths <- file.path(directory, files)
     plates <- lapply(filepaths, function(x){
         read_file(x, tofmin, tofmax, extmin, extmax,
-                  SVM, levels)
+                  SVM, levels, ...)
     })
     data <- do.call(rbind, plates)
     return(data)
 }
 
 read_file <- function(file, tofmin = 60, tofmax = 2000, extmin = 0,
-                      extmax = 10000, SVM = TRUE, levels = 2){
+                      extmax = 10000, SVM = TRUE, levels = 2, ...){
     
     # Read the raw sorter files and make the row names
     
-    plate <- COPASutils::readSorter(file, tofmin, tofmax, extmin, extmax)
+    plate <- COPASutils::readSorter(file, tofmin, tofmax, extmin, extmax, ...)
+    if(is.null(plate$Status.sort)) {
     modplate <- with(plate,
                      data.frame(row=Row,
                                 col=as.factor(Column),
-                                sort=Status.sort,
+                                sort=Sorted.status,
                                 TOF=TOF,
-                                EXT=EXT,
-                                time=Time.Stamp,
+                                EXT=Extinction,
+                                time=Time,
                                 green=Green,
                                 yellow=Yellow,
                                 red=Red))
+    } else {
+        modplate <- with(plate,
+                         data.frame(row=Row,
+                                    col=as.factor(Column),
+                                    sort=Status.sort,
+                                    TOF=TOF,
+                                    EXT=EXT,
+                                    time=Time.Stamp,
+                                    green=Green,
+                                    yellow=Yellow,
+                                    red=Red))
+    }
     
     # Extract the time so that it is realtive to the first worm sorted
     

@@ -18,4 +18,3 @@ A data frame in long form
 \description{
 Regress control values or assay values from experimental values
 }
-

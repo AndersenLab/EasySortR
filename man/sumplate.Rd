@@ -37,4 +37,3 @@ consisting of all of the score plates to be summarized. The second element
 in the list should be a data frame consisting of all of the setup plates to
 be summarized, from which the number sorted to each well will be extracted.
 }
-

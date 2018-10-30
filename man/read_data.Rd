@@ -5,7 +5,7 @@
 \title{Read plate data}
 \usage{
 read_data(filedir, tofmin = 60, tofmax = 2000, extmin = 0,
-  extmax = 10000, SVM = TRUE, levels = 2)
+  extmax = 10000, SVM = TRUE, levels = 2, ...)
 }
 \arguments{
 \item{filedir}{The file or directory to be read. This can be an individual
@@ -27,6 +27,8 @@ machine to separate worms and bubbles.}
 directory containing information about experiment date, name, round, and
 assay. Defaults to 2, which is the standard for Andersen Lab file structure
 as of June 2015.}
+
+\item{...}{Optional specifications for COPAS functions, such as reflx = FALSE}
 }
 \value{
 If a single file is given, a single data frame for only the provided
@@ -48,4 +50,3 @@ by the function. This function also utilizes an SVM to determine whether
 objects are more likely to be bubbles or worms and labels them accordingly.
 It also estimates the lifestage of each worm.
 }
-
