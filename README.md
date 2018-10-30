@@ -1,9 +1,10 @@
 # easysorter
 
-easysorter is effectively version 2 of the COPASutils package (Shimko and Andersen, 2014). This package is specialized for use with worms and includes additional functionality on top of that provided by COPASutils, including division of recorded objects by larval stage and the ability to regress out control phenotypes from those recorded in experimental conditions. The package is rather specific to use in the Andersen Lab and, therefore, is not available from CRAN. To install you will need the [`devtools`](https://github.com/hadley/devtools) package. You can install both the `devtools` package and easy sorter using the commands below:
+easysorter is effectively version 2 of the COPASutils package (Shimko and Andersen, 2014). This package is specialized for use with worms and includes additional functionality on top of that provided by COPASutils, including division of recorded objects by larval stage and the ability to regress out control phenotypes from those recorded in experimental conditions. The package is rather specific to use in the Andersen Lab and, therefore, is not available from CRAN. To install easysorter you will need the [`devtools`](https://github.com/hadley/devtools) package and the [`COPASutils`](https://github.com/AndersenLab/COPASutils) package. You can install `devtools`, `COPASutils`, and `easysorter` using the commands below:
 
 ```r
 install.packages("devtools")
+devtools::install_github("AndersenLab/COPASutils")
 devtools::install_github("AndersenLab/easysorter")
 ```
 
@@ -17,7 +18,7 @@ The functionality of the package can be broken down into three main goals:
 
 ## Directory structure
 
-Because so much information must be transferred alongside the plate data, the directory structure from which you are reading is critically important. Below is an example of a correct directory structure.
+Because so much information must be transferred alongside the plate data, the directory structure from which you are reading is critically important. Below is an example of a correct directory structure. The `setup` directory contains `.txt` files from the sort day copied directly from the sorter. The `score` directory contains `.txt` files from the score day copied directly from the sorter. If you don't have sort information, you can copy the `score` directory into the `setup` directory.
 
 ```
 20150529_LysateScore/
@@ -28,6 +29,9 @@ Because so much information must be transferred alongside the plate data, the di
 │   └── p02_contamination.csv
 ├── controls
 │   └── None.csv
+├── setup
+│   ├── p01_N2CBLysateTest_LysateConc5-20_None.txt
+│   └── p02_N2CBLysateTest_LysateConc5-20_None.txt
 ├── score
 │   ├── p01_N2CBLysateTest_LysateConc5-20_None.txt
 │   └── p02_N2CBLysateTest_LysateConc5-20_None.txt
@@ -95,6 +99,9 @@ Enter the value for contamination in only wells that were contaminated. These sh
 │   └── p02_contamination.csv
 ├── controls
 │   └── None.csv
+├── setup
+│   ├── p01_N2CBLysateTest_LysateConc5-20_None.txt
+│   └── p02_N2CBLysateTest_LysateConc5-20_None.txt
 ├── score
 │   ├── p01_N2CBLysateTest_LysateConc5-20_None.txt
 │   └── p02_N2CBLysateTest_LysateConc5-20_None.txt
@@ -140,9 +147,15 @@ For further information use the command `?bioprune` to access the documentation.
 
 ### `bamf_prune()`
 
-`bamf_prune()` takes a summarized plate as input and outputs a plate data frame either with three additional columns indicating outlier calls or a trimmed data frame with all outliers removed.
+`bamf_prune()` takes a summarized plate as input and outputs a plate data frame either with three additional columns indicating outlier calls or a trimmed data frame with all outliers removed. It is generally recommended to use `bamf_prune` when running mappings or other experiments with many strains and few replicates because it keeps outliers that are grouped together.
 
 For further information use the command `?bamf_prune` to access the documentation.
+
+### `prune_outliers()`
+
+`prune_outliers()` is an alternative to `bamf_prune()` that takes a summarized plate as input and outputs a trimmed data frame with all outliers removed. Outliers are claculated either as the median +/- (2 * IQR) if `iqr = TRUE` or mean +/- (2 * standard deviation) if `iqr = FALSE` (default). It is generally recommended to use `prune_outliers` with experiments with many replicates because it calculates outliers for each strain independently.
+
+For further information use the command `?prune_outliers` to access the documentation.
 
 ### `regress()`
 
