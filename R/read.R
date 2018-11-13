@@ -142,6 +142,19 @@ read_file <- function(file, tofmin = 60, tofmax = 2000, extmin = 0,
     
     plate <- COPASutils::readSorter(file, tofmin, tofmax, extmin, extmax, ...)
     if(is.null(plate$Status.sort)) {
+        plate$Column <- as.numeric(as.character(plate$Column))
+        if(max(plate$Column) == 0){
+            modplate <- with(plate,
+                             data.frame(row=stringr::str_split_fixed(Source.well, "[0-9]", 2)[,1],
+                                        col=as.factor(stringr::str_split_fixed(Source.well, "[A-Z]", 2)[,2]),
+                                        sort=Sorted.status,
+                                        TOF=TOF,
+                                        EXT=Extinction,
+                                        time=Time,
+                                        green=Green,
+                                        yellow=Yellow,
+                                        red=Red))
+        }else {
     modplate <- with(plate,
                      data.frame(row=Row,
                                 col=as.factor(Column),
@@ -152,6 +165,7 @@ read_file <- function(file, tofmin = 60, tofmax = 2000, extmin = 0,
                                 green=Green,
                                 yellow=Yellow,
                                 red=Red))
+        }
     } else {
         modplate <- with(plate,
                          data.frame(row=Row,
