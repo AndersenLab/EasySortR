@@ -18,7 +18,7 @@ The functionality of the package can be broken down into three main goals:
 
 ## Directory structure
 
-Because so much information must be transferred alongside the plate data, the directory structure from which you are reading is critically important. Below is an example of a correct directory structure. The `setup` directory contains `.txt` files from the sort day copied directly from the sorter. The `score` directory contains `.txt` files from the score day copied directly from the sorter. If you don't have sort information, you can copy the `score` directory into the `setup` directory.
+Because so much information must be transferred alongside the plate data, the directory structure from which you are reading is critically important. Below is an example of a correct directory structure. The `setup` directory contains `.txt` files from the sort day copied directly from the sorter. The `score` directory contains `.txt` files from the score day copied directly from the sorter. If you don't have sort information (i.e. V3 48 hour assay), you do not need the `setup` directory.
 
 ```
 20150529_LysateScore/
@@ -136,6 +136,8 @@ For further information use the command `?remove_contamination()` to access the 
 ### `sumplate()`
 
 `sumplate` summarizes the plates that have been read in to R using the `read_data` function. This function can take either a single data frame or the list of two data frames. If a list is passed, the `n.sorted` column will be calculated automatically using the setup data. Otherwise, n.sorted will be set to 0 and can be changed manually by the user.
+
+*For a V3 assay (no sorting), use the `v3_assay = TRUE` flag to avoid calculating `norm.n`.*
 
 For further information use the command `?sumplate` to access the documentation.
 
