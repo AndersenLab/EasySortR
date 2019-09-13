@@ -1,5 +1,5 @@
 summarize_plates <- function(plate, quantiles = FALSE, log = FALSE,
-                             ends = FALSE, long = FALSE, v3_assay = FALSE) {
+                             ends = FALSE, long = FALSE) {
     
     # Select only objects, missing rows, or calls not made
     

@@ -347,7 +347,7 @@ prune_outliers <- function(data, iqr = FALSE) {
                           sph = sd(phenotype)) %>%
             dplyr::ungroup() %>%
             
-            # Filter phenotype +/- 2*IQR
+            # Filter phenotype +/- 2*sd
             dplyr::filter(phenotype >= mph - 2*sph, phenotype <= 2*sph + mph) %>%
             
             # select out columns not needed
