@@ -388,18 +388,17 @@ sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantil
     
   
   #   if no sort day, generate dummy data (also for v3 assay)
-  
-  if(picked_plates == TRUE | v3_assay == TRUE){
-    sort_plate <- plates 
-    sort_plate$sort <- 3
-    
-    plates <- list(plates, sort_plate)
+  if(picked_plates == TRUE){
+      sort_plate <- plates
+      sort_plate$sort <- 3
+      
+      plates <- list(plates, sort_plate)
   }
   
     # If directories iss not set to true and the list looks like it came from
     # multiple directories, alert the user.
     
-    if (length(plates) > 2 & !directories) {
+    if (length(plates) > 2 & !directories & !v3_assay) {
         stop("It appears that you may be processing a data set made up of
              multiple directories, but you have not set the `directories` flag
              to `TRUE`. Please try again with `directories = TRUE`.")
@@ -408,11 +407,20 @@ sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantil
     if (directories) {
         data <- lapply(plates, function(x) {
             sumplate(x, quantiles = quantiles, log = log, ends = ends,
-                     long = long)
+                     long = long, v3_assay = v3_assay)
         })
         data <- dplyr::rbind_all(data)
         return(data)
     } else {
+        # if v3 assay, make dummy sort data
+        # (also for v3 assay)
+        if(v3_assay == TRUE) {
+            sort_plate <- plates 
+            sort_plate$sort <- 3
+            
+            plates <- list(plates, sort_plate)
+        }
+        
         # If plates is a list of data frames, summarize n.sorted of setup plate,
         # join it to the score plate, and calculate normalized n
         
