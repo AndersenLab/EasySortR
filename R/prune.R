@@ -302,8 +302,8 @@ prune_outliers <- function(data, iqr = FALSE) {
     data <- ensure_long(data)
     
     # remove NA phenotypes
-    
-    napheno <- data[is.na(data[, "phenotype"]), ]
+    # not needed
+    # napheno <- data[is.na(data[, "phenotype"]), ]
     
     # if type is IQR: 
     if(iqr == TRUE) {
