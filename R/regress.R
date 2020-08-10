@@ -12,7 +12,7 @@ regress <- function(dataframe, assay=FALSE){
     # Ensure the data frame is in long format, then filter out all NA strains
     # and nonfinite (NA, NaN, Inf) values
 
-    dataframe <- ensure_long(dataframe)
+    dataframe <- easysorter:::ensure_long(dataframe)
     dataframe <- dplyr::filter(dataframe, is.finite(phenotype), !is.na(strain))
 
     # Get rid of n.sorted phenotype values (always 0)
@@ -39,8 +39,8 @@ regress <- function(dataframe, assay=FALSE){
 
         regressed <- dataframe %>%
           dplyr::group_by(condition, trait) %>%
-          do(fit = lm(phenotype ~ assay - 1, .))
-        
+          dplyr::summarize(fit = lm(phenotype ~ assay - 1, .))
+
         withresids <- regressed%>%
           broom::augment(fit)%>%
           dplyr::ungroup()%>%
@@ -80,7 +80,7 @@ regress <- function(dataframe, assay=FALSE){
 
         regressed <- fusedmoltendata %>%
           dplyr::group_by(condition, trait) %>%
-          dplyr::do(fit = lm(phenotype ~ controlphenotype - 1, .))
+          dplyr::summarize(fit = lm(phenotype ~ controlphenotype - 1, .))
         
         withresids <- regressed%>%
           broom::augment(fit)%>%
