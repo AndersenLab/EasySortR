@@ -409,7 +409,7 @@ sumplate <- function(plates, picked_plates = FALSE, directories = FALSE, quantil
             sumplate(x, quantiles = quantiles, log = log, ends = ends,
                      long = long, v3_assay = v3_assay)
         })
-        data <- dplyr::rbind_all(data)
+        data <- dplyr::bind_rows(data)
         return(data)
     } else {
         # if v3 assay, make dummy sort data
