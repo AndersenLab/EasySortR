@@ -37,20 +37,37 @@ regress <- function(dataframe, assay=FALSE){
         # inside of a call to `mutate`, see:
         # http://stackoverflow.com/questions/28776792/combining-dplyrdo-with-dplyrmutate
 
-        regressed <- dataframe %>%
-          dplyr::group_by(condition, trait) %>%
-          dplyr::do(fit = lm(phenotype ~ assay - 1, .))
+        # regressed <- dataframe %>%
+        #   dplyr::group_by(condition, trait) %>%
+        #   dplyr::do(fit = lm(phenotype ~ assay - 1, .))
 
-        withresids <- regressed%>%
-          broom::augment(fit)%>%
-          dplyr::ungroup()%>%
-          dplyr::left_join(dataframe,.,by=c("condition", "trait", "phenotype", "assay"))%>%
-          dplyr::distinct(condition, trait, phenotype,strain,row,col,plate,.keep_all = T)%>%
-          dplyr::rename(resid = .resid)
+        # withresids <- regressed%>%
+        #   broom::augment(fit)%>%
+        #   dplyr::ungroup()%>%
+          # dplyr::left_join(dataframe,.,by=c("condition", "trait", "phenotype", "assay"))%>%
+          # dplyr::distinct(condition, trait, phenotype,strain,row,col,plate,.keep_all = T)%>%
+          # dplyr::rename(resid = .resid)
+        # 
+        # regressedframe <- withresids %>%
+        #   dplyr::mutate(phenotype = resid) %>%
+        #   dplyr::select(-resid, -.fitted, -.se.fit, -.hat, -.sigma, -.cooksd, -.std.resid)
+        # 
+        
+        # updated with broom/dplyr 20200810
+        withresids <- dataframe %>% 
+            tidyr::nest(data = -c(condition, trait)) %>% 
+            dplyr::mutate(fit = purrr::map(data, ~ lm(phenotype ~ assay - 1, data = .x)),
+                          augmented = purrr::map(fit, broom::augment)) %>%
+            tidyr::unnest(augmented) %>%
+            dplyr::select(-data, -fit) %>%
+            dplyr::left_join(dataframe,.,by=c("condition", "trait", "phenotype", "assay"))%>%
+            dplyr::distinct(condition, trait, phenotype,strain,row,col,plate,.keep_all = T)%>%
+            dplyr::rename(resid = .resid)
         
         regressedframe <- withresids %>%
           dplyr::mutate(phenotype = resid) %>%
-          dplyr::select(-resid, -.fitted, -.se.fit, -.hat, -.sigma, -.cooksd, -.std.resid)
+          dplyr::select(-(.fitted:.cooksd))
+
 
     } else {
         # Separate the data from the controls into two different data frames
@@ -64,7 +81,8 @@ regress <- function(dataframe, assay=FALSE){
 
         # Summarize the controls in case there are replicate controls
 
-        moltencontrols <- controls %>% dplyr::group_by(strain, control, trait, assay) %>%
+        moltencontrols <- controls %>% 
+            dplyr::group_by(strain, control, trait, assay) %>%
             dplyr::summarize(controlphenotype = mean(phenotype, na.rm=TRUE))
 
         # Join the control values back to the controls
@@ -78,21 +96,36 @@ regress <- function(dataframe, assay=FALSE){
         # inside of a call to `mutate`, see:
         # http://stackoverflow.com/questions/28776792/combining-dplyrdo-with-dplyrmutate
 
-        regressed <- fusedmoltendata %>%
-          dplyr::group_by(condition, trait) %>%
-          dplyr::do(fit = lm(phenotype ~ controlphenotype - 1, .))
+        # regressed <- fusedmoltendata %>%
+        #   dplyr::group_by(condition, trait) %>%
+        #   dplyr::do(fit = lm(phenotype ~ controlphenotype - 1, .))
+        # 
+        # withresids <- regressed%>%
+        #   broom::augment(fit)%>%
+        #   dplyr::ungroup()%>%
+        #   dplyr::left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
+        #   dplyr::distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
+        #   dplyr::rename(resid = .resid)
+        # 
+        # 
+        # regressedframe <- withresids %>%
+        #   dplyr::mutate(phenotype = resid) %>%
+        #   dplyr::select(-resid, -controlphenotype)
         
-        withresids <- regressed%>%
-          broom::augment(fit)%>%
-          dplyr::ungroup()%>%
-          dplyr::left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
-          dplyr::distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
-          dplyr::rename(resid = .resid)
-
+        # update 20200810
+        withresids <- fusedmoltendata %>% 
+            tidyr::nest(data = -c(condition, trait)) %>% 
+            dplyr::mutate(fit = purrr::map(data, ~ lm(phenotype ~ controlphenotype - 1, data = .x)),
+                          augmented = purrr::map(fit, broom::augment)) %>%
+            tidyr::unnest(augmented) %>%
+            dplyr::select(-data, -fit) %>%
+            dplyr::left_join(fusedmoltendata,.,by=c("condition", "trait", "phenotype", "controlphenotype"))%>%
+            dplyr::distinct(condition, trait, phenotype, controlphenotype,strain,row,col,plate,.keep_all = T)%>%
+            dplyr::rename(resid = .resid)
         
         regressedframe <- withresids %>%
-          dplyr::mutate(phenotype = resid) %>%
-          dplyr::select(-resid, -controlphenotype)
+            dplyr::mutate(phenotype = resid) %>%
+            dplyr::select(-(.fitted:.cooksd), -controlphenotype)
 
     }
 
