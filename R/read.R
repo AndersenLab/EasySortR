@@ -183,7 +183,7 @@ read_file <- function(file, tofmin = 60, tofmax = 2000, extmin = 0,
     
     modplate <- modplate %>%
         dplyr::group_by(row, col) %>%
-        dplyr::summarize(COPASutils::extractTime(.))
+        dplyr::do(COPASutils::extractTime(.))
     modplate <- data.frame(modplate)
     
     # Normalize the optical values by time of flight

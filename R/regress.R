@@ -39,7 +39,7 @@ regress <- function(dataframe, assay=FALSE){
 
         regressed <- dataframe %>%
           dplyr::group_by(condition, trait) %>%
-          dplyr::summarize(fit = lm(phenotype ~ assay - 1, .))
+          dplyr::do(fit = lm(phenotype ~ assay - 1, .))
 
         withresids <- regressed%>%
           broom::augment(fit)%>%
@@ -80,7 +80,7 @@ regress <- function(dataframe, assay=FALSE){
 
         regressed <- fusedmoltendata %>%
           dplyr::group_by(condition, trait) %>%
-          dplyr::summarize(fit = lm(phenotype ~ controlphenotype - 1, .))
+          dplyr::do(fit = lm(phenotype ~ controlphenotype - 1, .))
         
         withresids <- regressed%>%
           broom::augment(fit)%>%
