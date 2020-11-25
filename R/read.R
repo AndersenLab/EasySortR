@@ -293,3 +293,57 @@ read_template <- function(templatefile, type){
     
     return(melttemplate)
 }
+
+# KSE add new function to read in sample cup data 11.24.20
+read_samplecup <- function(filedir) {
+    plate <- COPASutils::readSorter(filedir)
+    modplate <- with(plate,
+                     data.frame(row=Row,
+                                col=as.factor(Column),
+                                sort=Status.sort,
+                                TOF=TOF,
+                                EXT=EXT,
+                                time=Time.Stamp,
+                                green=Green,
+                                yellow=Yellow,
+                                red=Red))
+    
+    # Extract the time so that it is realtive to the first worm sorted
+    modplate <- modplate %>%
+        dplyr::group_by(row, col) %>%
+        dplyr::do(COPASutils::extractTime(.))
+    modplate <- data.frame(modplate)
+    
+    # Normalize the optical values by time of flight
+    modplate[, 10:13] <- apply(modplate[, c(5, 7:9)], 2,
+                               function(x) x / modplate$TOF)
+    colnames(modplate)[10:13] <- c("norm.EXT", "norm.green", "norm.yellow",
+                                   "norm.red")
+    
+    # Handle the SVM predictions if requested
+    plateprediction <- kernlab::predict(
+        COPASutils::bubbleSVMmodel_noProfiler,
+        modplate[,3:length(modplate)],
+        type="probabilities")
+    
+    modplate$object <- plateprediction[, "1"]
+    modplate$call50 <- factor(as.numeric(modplate$object > 0.5),
+                              levels=c(1, 0), labels=c("object", "bubble"))
+    
+    # Calculate the life stage values based on the size of the worms
+    modplate$stage <- ifelse(modplate$TOF >= 60 & modplate$TOF < 90, "L1",
+                             ifelse(modplate$TOF >= 90 & modplate$TOF < 200,
+                                    "L2/L3",
+                                    ifelse(modplate$TOF >= 200
+                                           & modplate$TOF < 300, "L4",
+                                           ifelse(modplate$TOF >= 300,
+                                                  "adult", NA))))
+    
+    # Convert integer values to numerics
+    modplate[, as.vector(which(lapply(modplate, class) == "integer"))] <- lapply(
+        modplate[, as.vector(which(lapply(modplate, class) == "integer"))],
+        as.numeric)
+
+    # return plate
+    return(modplate)
+}
